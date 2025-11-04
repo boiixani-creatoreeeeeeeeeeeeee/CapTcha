@@ -4,17 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard – Captcha Finder</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <header><!-- same header --></header>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo"><i class="fas fa-shield-alt"></i>Captcha Finder</a>
+        <div style="display:flex;gap:1rem;align-items:center;">
+          <span id="username" class="username"></span>
+          <button class="logout" onclick="logout()">Logout</button>
+          <div class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></div>
+        </div>
+      </div>
+    </div>
+  </header>
 
   <main class="container">
-    <section class="hero">
-      <h2>Welcome, <span id="username"></span>!</h2>
-      <button class="btn btn-outline" id="logoutBtn">Logout</button>
-    </section>
+    <section class="hero"><h2>Welcome, <span id="user"></span>!</h2></section>
 
     <section class="search-section">
       <h3>Quick Scan</h3>
@@ -24,9 +32,8 @@
         </div>
         <button class="btn btn-primary" id="quickScan">Scan</button>
       </div>
+      <div class="results" id="quickResult" style="display:none;"></div>
     </section>
-
-    <section class="results" id="quickResult" style="display:none;"></section>
 
     <section class="search-section">
       <h3>Scan History</h3>
@@ -35,34 +42,52 @@
   </main>
 
   <script>
-    // ---- Auth check ----
+    // theme toggle (same)
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    const icon = themeToggle.querySelector('i');
+    const saved = localStorage.getItem('theme') || 'light';
+    body.dataset.theme = saved;
+    icon.classList.toggle('fa-sun', saved === 'dark');
+    icon.classList.toggle('fa-moon', saved === 'light');
+    themeToggle.onclick = () => {
+      const isDark = body.dataset.theme === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      body.dataset.theme = next;
+      localStorage.setItem('theme', next);
+      icon.classList.toggle('fa-sun', !isDark);
+      icon.classList.toggle('fa-moon', isDark);
+    };
+
+    // auth check
     fetch('/api/auth/me')
       .then(r => r.json())
       .then(d => {
         if (!d.username) location.href = '/login.html';
-        document.getElementById('username').textContent = d.username;
+        document.getElementById('user').textContent = d.username;
       });
 
-    document.getElementById('logoutBtn').onclick = () => {
-      fetch('/api/auth/logout', { method: 'POST' }).then(() => location.href = '/');
+    window.logout = async () => {
+      await fetch('/api/auth/logout', {method:'POST'});
+      location.href = '/';
     };
 
-    // ---- Quick scan ----
+    // quick scan
     document.getElementById('quickScan').onclick = async () => {
       const url = document.getElementById('quickUrl').value.trim();
       if (!url) return alert('Enter a URL');
       const res = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({url})
       });
       const data = await res.json();
-      const container = document.getElementById('quickResult');
-      container.style.display = 'block';
-      container.innerHTML = renderResults(url, data.captchas);
+      const el = document.getElementById('quickResult');
+      el.style.display = 'block';
+      el.innerHTML = render(data.captchas||[], url);
     };
 
-    // ---- History ----
+    // history
     async function loadHistory() {
       const res = await fetch('/api/scan/history');
       const scans = await res.json();
@@ -70,24 +95,17 @@
       if (!scans.length) return el.innerHTML = '<p>No scans yet.</p>';
       el.innerHTML = scans.map(s => `
         <div class="result-item">
-          <div><strong>${s.url}</strong><br>
-            <small>${new Date(s.scanned_at).toLocaleString()}</small>
-          </div>
+          <div><strong>${s.url}</strong><br><small>${new Date(s.scanned_at).toLocaleString()}</small></div>
           <div>${s.result.map(r=>`<span class="result-type">${r.type}</span>`).join(' ')}</div>
         </div>`).join('');
     }
     loadHistory();
 
-    function renderResults(url, captchas) {
-      if (!captchas.length) return `<p>No CAPTCHA found on <strong>${url}</strong></p>`;
-      return `
-        <h4>${captchas.length} CAPTCHA(s) on <strong>${url}</strong></h4>
-        ${captchas.map(c=>`
-          <div class="result-item">
-            <div><strong>${c.type}</strong></div>
-            <div class="result-type">${c.confidence}%</div>
-          </div>`).join('')}
-      `;
+    function render(captchas, url) {
+      if (!captchas.length) return `<p>No CAPTCHA on <strong>${url}</strong></p>`;
+      return `<h4>${captchas.length} on <strong>${url}</strong></h4>` +
+        captchas.map(c=>`<div class="result-item"><div><strong>${c.type}</strong></div>
+          <div class="result-type">${c.confidence}%</div></div>`).join('');
     }
   </script>
 </body>
