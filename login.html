@@ -208,7 +208,7 @@
     firebase.auth().onAuthStateChanged(user => {
       renderUser(user);
       if (user && (location.pathname.includes('login.html') || location.pathname.includes('register.html'))) {
-        location.href = '/';
+        location.href = '/CapTcha/';
       }
     });
 
