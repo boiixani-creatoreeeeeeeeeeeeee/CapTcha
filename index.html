@@ -60,36 +60,62 @@
       <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center text-white font-bold">CT</div>
       <span class="text-xl font-bold">CapTcha Tool</span>
     </a>
+
+    <!-- Desktop Menu -->
     <div class="hidden md:flex items-center space-x-6">
       <a href="#features" class="hover:text-indigo-400 transition">Features</a>
       <a href="#pricing" class="hover:text-indigo-400 transition">Pricing</a>
-      <a href="login.html" x-show="!user" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">Login</a>
-      <a href="register.html" x-show="!user" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">Register</a>
-      <template x-if="user">
-        <span class="text-sm text-white/80">Hi, <span x-text="user.email.split('@')[0]"></span></span>
-        <button @click="logout()" class="ml-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">Logout</button>
+
+      <!-- Logged Out -->
+      <template x-if="!user">
+        <a href="login.html" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">Login</a>
+        <a href="register.html" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">Register</a>
       </template>
+
+      <!-- Logged In -->
+      <template x-if="user">
+        <a href="dashboard.html" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
+          Dashboard
+        </a>
+        <button @click="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+          Logout
+        </button>
+      </template>
+
+      <!-- Dark Mode Toggle -->
       <button @click="dark = !dark" class="ml-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
         <i x-show="!dark" class="fas fa-moon text-lg"></i>
         <i x-show="dark" class="fas fa-sun text-lg text-yellow-400"></i>
       </button>
     </div>
+
+    <!-- Mobile Menu Toggle -->
     <button @click="mobileMenu = !mobileMenu" class="md:hidden">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
     </button>
   </nav>
+
+  <!-- Mobile Menu -->
   <div x-show="mobileMenu" class="md:hidden bg-white/95 dark:bg-gray-800/95 glass" x-transition>
     <div class="container mx-auto px-4 py-4 space-y-3">
       <a href="#features" class="block">Features</a>
       <a href="#pricing" class="block">Pricing</a>
+
+      <!-- Logged Out -->
       <template x-if="!user">
         <a href="login.html" class="block">Login</a>
         <a href="register.html" class="block text-indigo-600 font-medium">Register</a>
       </template>
+
+      <!-- Logged In -->
       <template x-if="user">
-        <div class="text-sm">Logged in as <span x-text="user.email"></span></div>
-        <button @click="logout()" class="text-red-600">Logout</button>
+        <a href="dashboard.html" class="block font-medium text-indigo-600">Dashboard</a>
+        <button @click="logout()" class="block text-red-600">Logout</button>
       </template>
+
+      <!-- Dark Mode -->
       <button @click="dark = !dark" class="flex items-center space-x-2">
         <i x-show="!dark" class="fas fa-moon"></i>
         <i x-show="dark" class="fas fa-sun text-yellow-400"></i>
@@ -109,7 +135,10 @@
       AI-powered, undetectable, 99.9% success rate. Bypass reCAPTCHA, hCaptcha, FunCaptcha, and more.
     </p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade">
-      <a href="dashboard.html" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl transition transform hover:-translate-y-1">
+      <a href="dashboard.html" x-show="user" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl transition transform hover:-translate-y-1">
+        Go to Dashboard
+      </a>
+      <a href="dashboard.html" x-show="!user" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl transition transform hover:-translate-y-1">
         Get Started
       </a>
       <a href="#features" class="px-8 py-4 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">
@@ -259,6 +288,7 @@
       mobileMenu: false,
       dark: localStorage.getItem('dark') === 'true',
       user: null,
+
       init() {
         this.$watch('dark', val => {
           document.documentElement.classList.toggle('dark', val);
@@ -269,11 +299,12 @@
         }
         document.documentElement.classList.toggle('dark', this.dark);
 
-        // Listen for auth state
+        // Auth state
         auth.onAuthStateChanged(user => {
           this.user = user ? { email: user.email } : null;
         });
       },
+
       async logout() {
         await auth.signOut();
         this.user = null;
