@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – CapTcha Tool</title>
+
+  <!-- Tailwind + Alpine -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .glass {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .dark .glass {
+      background: rgba(15,15,26,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen" x-data="dashboardApp()">
+
+  <!-- Navbar -->
+  <header class="fixed top-0 w-full z-50 glass border-b border-white/10">
+    <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="index.html" class="flex items-center space-x-2">
+        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center text-white font-bold">CT</div>
+        <span class="text-xl font-bold">CapTcha Tool</span>
+      </a>
+      <div class="hidden md:flex items-center space-x-4">
+        <span class="text-sm text-white/80">Welcome, <span x-text="user?.email"></span></span>
+        <button @click="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Logout</button>
+        <button @click="$dispatch('toggle-dark')" class="p-2 rounded-full hover:bg-white/10 transition">
+          <i x-show="!$store.dark" class="fas fa-moon"></i>
+          <i x-show="$store.dark" class="fas fa-sun text-yellow-400"></i>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="pt-24 pb-20 px-4">
+    <div class="container mx-auto max-w-5xl">
+      <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold mb-4">Welcome to Your Dashboard</h1>
+        <p class="text-xl text-gray-600 dark:text-gray-300">You are now logged in and ready to use CapTcha Tool.</p>
+      </div>
+
+      <!-- Dashboard Cards -->
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="glass p-6 rounded-2xl text-center">
+          <div class="w-16 h-16 mx-auto mb-4 gradient-bg rounded-xl flex items-center justify-center text-white text-2xl">
+            <i class="fas fa-key"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Your Key</h3>
+          <p class="text-3xl font-bold text-indigo-400" x-text="plan || 'Free Trial'"></p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" x-text="expires || 'Upgrade for full access'"></p>
+        </div>
+
+        <div class="glass p-6 rounded-2xl text-center">
+          <div class="w-16 h-16 mx-auto mb-4 bg-green-500 rounded-xl flex items-center justify-center text-white text-2xl">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Solves Today</h3>
+          <p class="text-3xl font-bold">0</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Unlimited with premium</p>
+        </div>
+
+        <div class="glass p-6 rounded-2xl text-center">
+          <div class="w-16 h-16 mx-auto mb-4 bg-purple-500 rounded-xl flex items-center justify-center text-white text-2xl">
+            <i class="fas fa-tachometer-alt"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Success Rate</h3>
+          <p class="text-3xl font-bold text-green-400">99.9%</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">AI-powered accuracy</p>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="mt-12 text-center">
+        <a href="#pricing" class="inline-block px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl transition transform hover:-translate-y-1">
+          Upgrade Plan
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-100 dark:bg-gray-800 py-8 px-4 mt-20">
+    <div class="container mx-auto text-center text-gray-600 dark:text-gray-400 text-sm">
+      <p>© 2025 CapTcha Tool. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Alpine + Firebase Logic -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyA9sJoZSzbmKJ-7F9jsYVmf7m4cMJ_JUuA",
+      authDomain: "captcha-finder.firebaseapp.com",
+      projectId: "captcha-finder",
+      storageBucket: "captcha-finder.firebasestorage.app",
+      messagingSenderId: "268327722037",
+      appId: "1:268327722037:web:54ba44e1d4ccc2c734e57c",
+      measurementId: "G-LX1WXZFJCW"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function dashboardApp() {
+      return {
+        user: null,
+        plan: 'Premium',
+        expires: '90 days remaining',
+
+        init() {
+          // Dark mode
+          document.addEventListener('alpine:init', () => {
+            Alpine.store('dark', localStorage.getItem('dark') === 'true');
+            Alpine.effect(() => {
+              document.documentElement.classList.toggle('dark', Alpine.store('dark'));
+              localStorage.setItem('dark', Alpine.store('dark'));
+            });
+          });
+          document.addEventListener('toggle-dark', () => Alpine.store('dark', !Alpine.store('dark')));
+
+          // Check auth
+          auth.onAuthStateChanged(user => {
+            if (user) {
+              this.user = user;
+            } else {
+              window.location.href = 'login.html';
+            }
+          });
+        },
+
+        async logout() {
+          await auth.signOut();
+          window.location.href = 'index.html';
+        }
+      };
+    }
+  </script>
+</body>
+</html>
