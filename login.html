@@ -1,127 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard – CapTcha Tool</title>
+  <title>Login – CapTcha Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .glass { backdrop-filter: blur(12px); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); }
+    .glass-card { background: rgba(30, 35, 55, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
+    .discord-btn { background: #5865F2; transition: all 0.3s ease; }
+    .discord-btn:hover { background: #4752C4; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(88, 101, 242, 0.3); }
+    .bird-svg { animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
   </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 text-gray-100 min-h-screen" x-data="dashboard()" x-init="init()">
-
-<header class="fixed top-0 w-full glass border-b border-white/10 z-50">
-  <nav class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-    <a href="index.html" class="flex items-center space-x-2">
-      <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex justify-center items-center font-bold">CT</div>
-      <span class="text-xl font-bold">CapTcha Tool</span>
-    </a>
-    <div class="flex items-center gap-3" x-show="user.email">
-      <span class="text-sm" x-text="user.email"></span>
-      <button @click="logout()" class="text-red-400 hover:text-red-300 transition">
-        <i class="fas fa-sign-out-alt mr-1"></i>Logout
-      </button>
+<body class="bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 min-h-screen flex items-center justify-center p-4">
+<div class="w-full max-w-5xl">
+  <div class="glass-card rounded-3xl overflow-hidden">
+    <div class="grid md:grid-cols-2 gap-0">
+      <!-- Left Panel -->
+      <div class="p-8 md:p-12 flex flex-col justify-between text-white">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold mb-3">CapTcha Tool</h1>
+          <p class="text-gray-300 text-sm md:text-base mb-8 leading-relaxed">
+            Login with the easy built-in Discord authentication to access your personal dashboard!
+          </p>
+          <ul class="space-y-3">
+            <li class="flex items-center text-sm md:text-base">
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Fast</span>
+            </li>
+            <li class="flex items-center text-sm md:text-base">
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Simple</span>
+            </li>
+            <li class="flex items-center text-sm md:text-base">
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Responsive</span>
+            </li>
+          </ul>
+        </div>
+        <div class="mt-10 md:mt-16 flex justify-center md:block">
+          <svg width="180" height="180" viewBox="0 0 200 200" class="hidden md:block opacity-80">
+            <g transform="translate(100,100)">
+              <path d="M-40,-40 L-40,-70 L-10,-85 L40,-70 L40,-40 L20,-40 L20,10 L-20,10 L-20,-40 Z" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+              <rect x="-15" y="-35" width="30" height="45" fill="#1e40af"/>
+              <circle cx="0" cy="-55" r="8" fill="#fbbf24"/>
+              <path d="M-50,0 Q-60,-10 -55,-20 Q-50,-25 -45,-20 Q-40,-10 -50,0" fill="#fb923c"/>
+              <path d="M50,5 Q60,-5 55,-15 Q50,-20 45,-15 Q40,-5 50,5" fill="#fb923c"/>
+              <path d="M-30,-30 Q-35,-35 -32,-40 Q-28,-42 -25,-38 Q-22,-35 -27,-32" fill="#60a5fa"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <!-- Right Panel -->
+      <div class="p-8 md:p-12 bg-slate-900/50 flex flex-col items-center justify-center text-center text-white">
+        <div class="mb-8">
+          <svg width="120" height="120" viewBox="0 0 140 140" class="bird-svg mx-auto">
+            <g transform="translate(70,70)">
+              <path d="M0,-40 Q-15,-50 -30,-45 Q-45,-40 -50,-25 Q-45,-10 -30,0 Q-15,-5 0,-15 Q15,-5 30,0 Q45,-10 50,-25 Q45,-40 30,-45 Q15,-50 0,-40"
+                    fill="url(#birdGradient)" stroke="#60a5fa" stroke-width="2"/>
+              <defs>
+                <linearGradient id="birdGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#93c5fd"/>
+                  <stop offset="100%" stop-color="#60a5fa"/>
+                </linearGradient>
+              </defs>
+              <path d="M-35,-15 Q-50,-25 -45,-35 Q-35,-40 -25,-30" fill="#60a5fa" opacity="0.8"/>
+              <path d="M35,-15 Q50,-25 45,-35 Q35,-40 25,-30" fill="#60a5fa" opacity="0.8"/>
+            </g>
+          </svg>
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold mb-3">Welcome Back!</h2>
+        <p class="text-gray-400 text-sm md:text-base mb-10 max-w-xs">
+          Thanks for using CapTcha Tool. You can now login to your dashboard.
+        </p>
+        <a href="https://discord.com/oauth2/authorize?client_id=963238863256567848&response_type=code&redirect_uri=https%3A%2F%2Fcapovh.github.io%2FCapTcha%2F&scope=identify+guilds"
+           class="discord-btn text-white font-semibold px-8 py-3 rounded-full flex items-center gap-3 text-lg w-fit">
+          <i class="fab fa-discord"></i>
+          Sign in with Discord
+          <i class="fas fa-arrow-right ml-1"></i>
+        </a>
+      </div>
     </div>
-  </nav>
-</header>
-
-<main class="pt-24 pb-12 max-w-6xl mx-auto px-4 text-center">
-  <template x-if="loading">
-    <div class="py-24">
-      <div class="animate-spin h-12 w-12 mx-auto border-4 border-indigo-500 border-t-transparent rounded-full mb-4"></div>
-      <p>Loading your dashboard...</p>
-    </div>
-  </template>
-
-  <template x-if="!loading && user.email">
-    <div>
-      <h1 class="text-3xl font-bold mb-4">Welcome, <span x-text="user.email"></span></h1>
-      <p class="text-gray-400 mb-8">Your account is securely authenticated with Firebase.</p>
-      <canvas id="chart" height="100"></canvas>
-    </div>
-  </template>
-
-  <template x-if="error">
-    <div class="py-24 text-red-400">
-      <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
-      <p>Authentication failed or session expired.</p>
-      <a href="login.html" class="block mt-4 bg-indigo-600 px-6 py-3 rounded-lg text-white">Back to Login</a>
-    </div>
-  </template>
-</main>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9sJoZSzbmKJ-7F9jsYVmf7m4cMJ_JUuA",
-    authDomain: "captcha-finder.firebaseapp.com",
-    projectId: "captcha-finder",
-    storageBucket: "captcha-finder.firebasestorage.app",
-    messagingSenderId: "268327722037",
-    appId: "1:268327722037:web:54ba44e1d4ccc2c734e57c"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-
-  function dashboard() {
-    return {
-      user: {}, loading: true, error: false,
-
-      init() {
-        auth.onAuthStateChanged(async (user) => {
-          if (!user) {
-            this.error = true;
-            this.loading = false;
-            setTimeout(() => window.location.href = 'login.html', 2500);
-            return;
-          }
-
-          const token = await user.getIdToken();
-          localStorage.setItem('firebase_user', JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            token
-          }));
-          this.user = { email: user.email };
-          this.loading = false;
-          this.$nextTick(() => this.loadChart());
-        });
-      },
-
-      logout() {
-        auth.signOut().then(() => {
-          localStorage.removeItem('firebase_user');
-          window.location.href = 'login.html';
-        });
-      },
-
-      loadChart() {
-        const ctx = document.getElementById('chart');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-            datasets: [{
-              label: 'Solves',
-              data: [12, 19, 7, 15, 23, 18, 24],
-              borderColor: '#a78bfa',
-              backgroundColor: 'rgba(167,139,250,0.2)',
-              fill: true,
-              tension: 0.4
-            }]
-          },
-          options: { plugins: { legend: { display: false } } }
-        });
-      }
-    }
-  }
-</script>
+  </div>
+</div>
 </body>
 </html>
