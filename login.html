@@ -153,7 +153,7 @@
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
       firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(() => location.href = '/index.html/')  // FIXED
+        .then(() => location.href = '/CapTcha/')  // FIXED
         .catch(err => {
           btn.disabled = false;
           btn.innerHTML = 'Login';
