@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .glass { backdrop-filter: blur(12px); background: rgba(255,255,255,0.08); }
+    .glass { backdrop-filter: blur(12px); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); }
     .avatar { transition: transform 0.3s ease; }
     .avatar:hover { transform: scale(1.1); }
   </style>
@@ -25,9 +25,9 @@
       <img src="assets/logo.svg" alt="CapTcha Tool" class="w-10 h-10">
       <span class="text-xl font-bold">CapTcha Tool</span>
     </a>
-    <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-4" x-show="user.id">
       <div class="flex items-center space-x-3">
-        <img :src="user.avatar" alt="User Avatar" class="w-9 h-9 rounded-full avatar object-cover ring-2 ring-indigo-500">
+        <img :src="user.avatar" alt="Avatar" class="w-9 h-9 rounded-full avatar object-cover ring-2 ring-indigo-500">
         <span class="text-sm font-medium" x-text="user.name"></span>
       </div>
       <button @click="copyKey()" class="text-sm px-3 py-1 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition">Copy API Key</button>
@@ -39,45 +39,51 @@
 <div class="pt-24 container mx-auto px-4 max-w-6xl">
 
   <!-- User Profile Card -->
-  <div class="bg-white/5 glass border border-white/10 rounded-2xl p-6 mb-8 backdrop-blur-lg">
+  <div class="bg-white/5 glass rounded-2xl p-6 mb-8" x-show="user.id">
     <div class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-      <img :src="user.avatar" alt="Discord Avatar" class="w-24 h-24 rounded-full ring-4 ring-indigo-500 shadow-xl avatar">
+      <img :src="user.avatar" alt="Avatar" class="w-24 h-24 rounded-full ring-4 ring-indigo-500 shadow-xl avatar">
       <div class="text-center md:text-left">
         <h1 class="text-3xl font-bold" x-text="user.global_name || user.username"></h1>
-        <p class="text-gray-400" x-text="user.email"></p>
+        <p class="text-gray-400" x-text="user.email || 'Email hidden'"></p>
         <p class="text-xs text-gray-500 mt-1">ID: <span x-text="user.id"></span></p>
       </div>
     </div>
   </div>
 
+  <!-- Loading State -->
+  <div class="text-center py-20" x-show="!user.id">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+    <p class="mt-4 text-gray-400">Authenticating with Discord...</p>
+  </div>
+
   <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white/5 glass border border-white/10 p-6 rounded-xl">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" x-show="user.id">
+    <div class="bg-white/5 glass p-6 rounded-xl">
       <p class="text-sm text-gray-400">Solves Today</p>
-      <p class="text-3xl font-bold" x-text="stats.today"></p>
+      <p class="text-3xl font-bold">842</p>
     </div>
-    <div class="bg-white/5 glass border border-white/10 p-6 rounded-xl">
+    <div class="bg-white/5 glass p-6 rounded-xl">
       <p class="text-sm text-gray-400">Success Rate</p>
-      <p class="text-3xl font-bold text-green-400" x-text="stats.success + '%'"></p>
+      <p class="text-3xl font-bold text-green-400">99.4%</p>
     </div>
-    <div class="bg-white/5 glass border border-white/10 p-6 rounded-xl">
+    <div class="bg-white/5 glass p-6 rounded-xl">
       <p class="text-sm text-gray-400">Avg Solve Time</p>
-      <p class="text-3xl font-bold text-indigo-400" x-text="stats.time + 's'"></p>
+      <p class="text-3xl font-bold text-indigo-400">1.1s</p>
     </div>
-    <div class="bg-white/5 glass border border-white/10 p-6 rounded-xl">
+    <div class="bg-white/5 glass p-6 rounded-xl">
       <p class="text-sm text-gray-400">Plan</p>
-      <p class="text-3xl font-bold text-purple-400" x-text="user.plan"></p>
+      <p class="text-3xl font-bold text-purple-400">Free</p>
     </div>
   </div>
 
   <!-- Chart -->
-  <div class="bg-white/5 glass border border-white/10 p-6 rounded-xl mb-8">
+  <div class="bg-white/5 glass p-6 rounded-xl mb-8" x-show="user.id">
     <h2 class="text-xl font-semibold mb-4 text-indigo-300">Solve Activity (Last 7 Days)</h2>
     <canvas id="solveChart" height="100"></canvas>
   </div>
 
   <!-- API Key -->
-  <div class="bg-white/5 glass border border-white/10 p-6 rounded-xl">
+  <div class="bg-white/5 glass p-6 rounded-xl" x-show="user.id">
     <h2 class="text-xl font-semibold mb-4 text-indigo-300">Your API Key</h2>
     <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3">
       <code class="flex-1 bg-gray-800/50 px-4 py-2 rounded-lg font-mono text-sm break-all" x-text="apiKey"></code>
@@ -90,47 +96,53 @@
 <script>
 function dashboard() {
   return {
-    user: { name: 'Loading...', avatar: '', email: '', id: '', plan: 'Free', global_name: '' },
-    stats: { today: 842, success: 99.4, time: 1.1 },
+    user: { id: '', name: 'Loading...', avatar: '', email: '', global_name: '', username: '' },
     apiKey: 'ct_sk_8f9e2a1b3c4d5e6f7g8h9i0j1k2l3m4n',
 
-    async init() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-
-      if (!code) {
-        alert('Please log in first.');
-        window.location.href = 'login.html';
+    init() {
+      const hash = window.location.hash.substring(1);
+      if (!hash) {
+        this.redirectToLogin();
         return;
       }
 
-      // CALL YOUR VERCEL PROXY
-      const proxyUrl = 'https://your-project.vercel.app/api/discord'; // CHANGE THIS
-      const res = await fetch(`${proxyUrl}?code=${code}`);
+      const params = new URLSearchParams(hash);
+      const access_token = params.get('access_token');
+      const token_type = params.get('token_type');
 
-      if (!res.ok) {
-        const err = await res.text();
-        console.error('Proxy error:', err);
-        alert('Login failed. Try again.');
-        window.location.href = 'login.html';
+      if (!access_token) {
+        this.redirectToLogin();
         return;
       }
 
-      const discordUser = await res.json();
+      // Fetch user from Discord
+      fetch('https://discord.com/api/users/@me', {
+        headers: { Authorization: `${token_type} ${access_token}` }
+      })
+      .then(res => res.ok ? res.json() : Promise.reject(res.status))
+      .then(data => {
+        this.user = {
+          id: data.id,
+          username: data.username,
+          global_name: data.global_name || data.username,
+          email: data.email || 'Not shared',
+          avatar: data.avatar
+            ? `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png?size=256`
+            : `https://cdn.discordapp.com/embed/avatars/${(data.discriminator || 0) % 5}.png`
+        };
+        this.apiKey = 'ct_sk_' + Math.random().toString(36).substr(2, 32);
+        window.history.replaceState({}, '', '/CapTcha/dashboard.html');
+        this.initChart();
+      })
+      .catch(err => {
+        console.error('Discord fetch failed:', err);
+        alert('Failed to load user. Try logging in again.');
+        this.redirectToLogin();
+      });
+    },
 
-      this.user = {
-        name: discordUser.global_name || discordUser.username,
-        username: discordUser.username,
-        global_name: discordUser.global_name,
-        email: discordUser.email || 'Hidden',
-        id: discordUser.id,
-        avatar: discordUser.avatar,
-        plan: 'Pro'
-      };
-
-      this.apiKey = 'ct_sk_' + Math.random().toString(36).substr(2, 32);
-      window.history.replaceState({}, '', '/CapTcha/dashboard.html');
-      this.initChart();
+    redirectToLogin() {
+      window.location.href = 'login.html';
     },
 
     initChart() {
@@ -163,7 +175,7 @@ function dashboard() {
     },
 
     regenerateKey() {
-      if (confirm('Regenerate?')) {
+      if (confirm('Regenerate API key?')) {
         this.apiKey = 'ct_sk_' + Math.random().toString(36).substr(2, 32);
       }
     },
@@ -174,5 +186,6 @@ function dashboard() {
   }
 }
 </script>
+
 </body>
 </html>
