@@ -75,7 +75,7 @@
           try {
             await auth.createUserWithEmailAndPassword(this.email, this.password);
             this.success = true;
-            setTimeout(() => window.location.href = 'dashboard.html', 1500);
+            setTimeout(() => window.location.href = 'index.html', 1500);
           } catch (err) {
             this.error = err.code === 'auth/email-already-in-use' ? 'Email already registered.' : 'Registration failed.';
           } finally { this.loading = false; }
