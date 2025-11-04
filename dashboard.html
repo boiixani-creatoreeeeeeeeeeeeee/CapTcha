@@ -89,84 +89,137 @@
 
 <script>
 async function getDiscordUser(code) {
-  const proxy = 'https://corsproxy.io/?';
-  const tokenResponse = await fetch(proxy + 'https://discord.com/api/oauth2/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: '963238863256567848',
-      client_secret: '1YLqg6SOs4UmW6PXQ4Ge7ITLgsvIAhme', // REPLACE THIS
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: 'https://capovh.github.io/CapTcha/dashboard.html',
-      scope: 'identify email guilds'
-    })
-  });
+  if (!code) {
+    console.error('No code in URL');
+    return null;
+  }
 
-  if (!tokenResponse.ok) return null;
-  const tokenData = await tokenResponse.json();
+  // REPLACE WITH YOUR REAL CLIENT SECRET (from Discord Developer Portal)
+  const CLIENT_SECRET = 'REPLACE_WITH_YOUR_SECRET_HERE';  // CRITICAL: GET FROM https://discord.com/developers/applications
 
-  const userResponse = await fetch('https://discord.com/api/users/@me', {
-    headers: { Authorization: `Bearer ${tokenData.access_token}` }
-  });
+  const client_id = '963238863256567848';
+  const redirect_uri = 'https://capovh.github.io/CapTcha/dashboard.html';
 
-  if (!userResponse.ok) return null;
-  const user = await userResponse.json();
+  // Try multiple proxies for reliability
+  const proxies = [
+    'https://corsproxy.io/?',
+    'https://api.allorigins.win/raw?url='
+  ];
 
-  user.avatarUrl = user.avatar 
-    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`
-    : `https://cdn.discordapp.com/embed/avatars/${user.discriminator % 5}.png`;
+  let tokenData = null;
+  for (const proxy of proxies) {
+    try {
+      const tokenResponse = await fetch(proxy + encodeURIComponent('https://discord.com/api/oauth2/token'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id,
+          client_secret: CLIENT_SECRET,
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri,
+          scope: 'identify email guilds'
+        })
+      });
 
-  return { ...user, access_token: tokenData.access_token };
+      if (tokenResponse.ok) {
+        tokenData = await tokenResponse.json();
+        console.log('Token received:', tokenData);
+        break;
+      } else {
+        console.warn(`Proxy ${proxy} failed: ${tokenResponse.status}`);
+      }
+    } catch (err) {
+      console.warn(`Proxy ${proxy} error:`, err);
+    }
+  }
+
+  if (!tokenData) {
+    console.error('All proxies failed. Check client_secret and network.');
+    return null;
+  }
+
+  try {
+    const userResponse = await fetch('https://discord.com/api/users/@me', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+
+    if (!userResponse.ok) {
+      console.error('User fetch failed:', userResponse.status, await userResponse.text());
+      return null;
+    }
+
+    const user = await userResponse.json();
+    user.avatarUrl = user.avatar 
+      ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`
+      : `https://cdn.discordapp.com/embed/avatars/${user.discriminator % 5}.png`;
+
+    return { ...user, access_token: tokenData.access_token };
+  } catch (err) {
+    console.error('User fetch error:', err);
+    return null;
+  }
 }
 
 function dashboard() {
   return {
-    user: { name: 'Loading...', avatar: '', email: '', id: '', plan: 'Free', global_name: '' },
-    stats: { today: 0, success: 0, time: 0 },
-    apiKey: 'ct_sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    user: { name: 'Loading...', avatar: '/assets/logo.svg', email: '', id: '', plan: 'Free', global_name: '' },
+    stats: { today: 842, success: 99.4, time: 1.1 },
+    apiKey: 'ct_sk_8f9e2a1b3c4d5e6f7g8h9i0j1k2l3m4n',
 
     async init() {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
+      const error = urlParams.get('error');  // Discord error param
 
-      if (!code) {
-        alert('Not logged in. Redirecting...');
+      if (error) {
+        console.error('Discord error:', error);
+        alert(`Login failed: ${error}. Check app permissions.`);
         window.location.href = 'login.html';
         return;
       }
+
+      if (!code) {
+        console.error('No auth code. Redirecting to login.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      console.log('Auth code received:', code);
 
       const discordUser = await getDiscordUser(code);
       if (!discordUser) {
-        alert('Failed to authenticate with Discord.');
+        console.error('Auth failed - check client_secret and redirect_uri.');
+        alert('Authentication failed. Please try logging in again.');
         window.location.href = 'login.html';
         return;
       }
 
-      // Save user
       this.user = {
         name: discordUser.global_name || discordUser.username,
         username: discordUser.username,
         global_name: discordUser.global_name,
-        email: discordUser.email || 'Not provided',
+        email: discordUser.email || 'Email not available',
         id: discordUser.id,
         avatar: discordUser.avatarUrl,
-        plan: 'Pro' // or fetch from your DB
+        plan: 'Premium'  // Fetch from your DB or SellAuth
       };
 
-      // Fake stats (replace with real API later)
+      // Fake stats (REPLACE with real API)
       this.stats = { today: 842, success: 99.4, time: 1.1 };
       this.apiKey = 'ct_sk_' + Math.random().toString(36).substr(2, 32);
 
-      // Clean URL
-      window.history.replaceState({}, document.title, window.location.pathname);
+      // Clean URL (remove ?code=...)
+      window.history.replaceState({}, '', window.location.pathname);
 
       // Init chart
       this.initChart();
     },
 
     initChart() {
-      const ctx = document.getElementById('solveChart').getContext('2d');
+      const ctx = document.getElementById('solveChart')?.getContext('2d');
+      if (!ctx) return;
+
       new Chart(ctx, {
         type: 'line',
         data: {
@@ -177,9 +230,7 @@ function dashboard() {
             borderColor: '#a78bfa',
             backgroundColor: 'rgba(167, 139, 250, 0.1)',
             tension: 0.4,
-            fill: true,
-            pointBackgroundColor: '#a78bfa',
-            pointRadius: 5
+            fill: true
           }]
         },
         options: {
@@ -194,12 +245,11 @@ function dashboard() {
     },
 
     copyKey() {
-      navigator.clipboard.writeText(this.apiKey);
-      alert('API Key copied to clipboard!');
+      navigator.clipboard.writeText(this.apiKey).then(() => alert('API Key copied!'));
     },
 
     regenerateKey() {
-      if (confirm('Regenerate API key? This will break existing scripts.')) {
+      if (confirm('Regenerate API key? This will invalidate current keys.')) {
         this.apiKey = 'ct_sk_' + Math.random().toString(36).substr(2, 32);
       }
     },
@@ -213,6 +263,5 @@ function dashboard() {
   }
 }
 </script>
-
 </body>
 </html>
