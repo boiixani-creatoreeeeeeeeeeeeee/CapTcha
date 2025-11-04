@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login – CapTcha Tool</title>
 
-  <!-- Tailwind -->
+  <!-- Tailwind + Alpine -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
@@ -38,13 +38,13 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex items-center justify-center p-4" x-data="loginApp()">
 
-  <!-- Background Gradient -->
+  <!-- Background -->
   <div class="fixed inset-0 gradient-bg opacity-90"></div>
 
   <!-- Login Card -->
   <div class="relative z-10 w-full max-w-md">
     <div class="glass rounded-3xl shadow-2xl p-8 md:p-10">
-      
+
       <!-- Logo -->
       <div class="flex justify-center mb-8">
         <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
@@ -55,7 +55,7 @@
       <h1 class="text-3xl font-bold text-center text-white mb-2">Welcome Back</h1>
       <p class="text-center text-white/70 mb-8">Sign in to your CapTcha Tool account</p>
 
-      <!-- Login Form -->
+      <!-- Form -->
       <form @submit.prevent="login" class="space-y-6">
         <!-- Email -->
         <div>
@@ -95,8 +95,13 @@
           </div>
         </div>
 
-        <!-- Error Message -->
-        <div x-show="error" class="text-red-300 text-sm text-center" x-text="error"></div>
+        <!-- Error -->
+        <div x-show="error" class="bg-red-500/20 border border-red-500/50 text-red-300 text-sm p-3 rounded-lg text-center" x-text="error"></div>
+
+        <!-- Success -->
+        <div x-show="success" class="bg-green-500/20 border border-green-500/50 text-green-300 text-sm p-3 rounded-lg text-center">
+          Login successful! Redirecting...
+        </div>
 
         <!-- Submit -->
         <button 
@@ -140,7 +145,7 @@
 
   <!-- Alpine + Firebase Logic -->
   <script>
-    // Firebase Config (same as index.html)
+    // Firebase Config (must match index.html)
     const firebaseConfig = {
       apiKey: "AIzaSyA9sJoZSzbmKJ-7F9jsYVmf7m4cMJ_JUuA",
       authDomain: "captcha-finder.firebaseapp.com",
@@ -161,20 +166,29 @@
         showPassword: false,
         loading: false,
         error: '',
+        success: false,
 
         async login() {
           this.loading = true;
           this.error = '';
+          this.success = false;
 
           try {
-            await auth.signInWithEmailAndPassword(this.email, this.password);
-            // Success: redirect handled by index.html's onAuthStateChanged
+            const userCredential = await auth.signInWithEmailAndPassword(this.email, this.password);
+            this.success = true;
+            
+            // Optional: redirect only on success
+            setTimeout(() => {
+              window.location.href = 'dashboard.html';
+            }, 1500);
+
           } catch (err) {
-            this.error = err.message.includes('wrong-password') 
-              ? 'Incorrect password.' 
-              : err.message.includes('user-not-found')
-              ? 'No account found with this email.'
-              : 'Login failed. Please try again.';
+            console.error(err);
+            this.error = 
+              err.code === 'auth/user-not-found' ? 'No account found with this email.' :
+              err.code === 'auth/wrong-password' ? 'Incorrect password.' :
+              err.code === 'auth/invalid-email' ? 'Please enter a valid email.' :
+              'Login failed. Please try again.';
           } finally {
             this.loading = false;
           }
@@ -182,9 +196,9 @@
       };
     }
 
-    // Global Dark Mode Store (shared with index.html)
+    // Dark Mode Store (shared with index.html)
     document.addEventListener('alpine:init', () => {
-      Alpine.store('dark', localStorage.getItem('dark') === 'true' || false);
+      Alpine.store('dark', localStorage.getItem('dark') === 'true');
       
       Alpine.effect(() => {
         const dark = Alpine.store('dark');
@@ -193,17 +207,11 @@
       });
     });
 
-    // Listen for toggle event
     document.addEventListener('toggle-dark', () => {
       Alpine.store('dark', !Alpine.store('dark'));
     });
 
-    // Auto-redirect if already logged in
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        window.location.replace('dashboard.html');
-      }
-    });
+    // NO auto-redirect on page load
   </script>
 </body>
 </html>
