@@ -96,21 +96,25 @@ function dashboard() {
     apiKey: 'ct_sk_8f9e2a1b3c4d5e6f7g8h9i0j1k2l3m4n',
 
     init() {
-      // === NO ALERTS ALLOWED. EVER. ===
-      const hash = window.location.hash.substring(1);
-      if (!hash) return this.redirect();
+      // 1. Check URL hash first (first login)
+      let token = this.getTokenFromHash();
 
-      const params = new URLSearchParams(hash);
-      const token = params.get('access_token');
+      // 2. If no hash, check localStorage (reload)
+      if (!token) {
+        token = localStorage.getItem('discord_token');
+      }
+
+      // 3. No token anywhere? Redirect
       if (!token) return this.redirect();
 
+      // 4. Save token for future reloads
+      localStorage.setItem('discord_token', token);
+
+      // 5. Fetch user
       fetch('https://discord.com/api/users/@me', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      .then(r => {
-        if (!r.ok) return this.redirect();  // Silent
-        return r.json();
-      })
+      .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
         this.user = {
           id: data.id,
@@ -122,15 +126,28 @@ function dashboard() {
             : `https://cdn.discordapp.com/embed/avatars/${(data.discriminator || 0) % 5}.png`
         };
         this.apiKey = 'ct_sk_' + Math.random().toString(36).substr(2, 32);
-        history.replaceState({}, '', '/CapTcha/dashboard.html');
+        this.cleanUrl(); // Clean #access_token
         this.initChart();
       })
-      .catch(() => this.redirect());  // Silent
+      .catch(() => {
+        localStorage.removeItem('discord_token');
+        this.redirect();
+      });
+    },
+
+    getTokenFromHash() {
+      const hash = window.location.hash.substring(1);
+      if (!hash) return null;
+      const params = new URLSearchParams(hash);
+      return params.get('access_token');
+    },
+
+    cleanUrl() {
+      history.replaceState({}, '', '/CapTcha/dashboard.html');
     },
 
     redirect() {
-      // === BLACKLISTED: NO ALERTS, NO CONSOLE, NO CRASH ===
-      window.location.replace('login.html');  // Clean redirect
+      window.location.replace('login.html');
     },
 
     initChart() {
@@ -154,7 +171,6 @@ function dashboard() {
 
     copyKey() {
       navigator.clipboard.writeText(this.apiKey).then(() => {
-        // Optional: show toast instead of alert
         const toast = document.createElement('div');
         toast.textContent = 'Copied!';
         toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
@@ -170,10 +186,13 @@ function dashboard() {
     },
 
     logout() {
-      if (confirm('Logout?')) window.location.href = 'login.html';
+      if (confirm('Logout?')) {
+        localStorage.removeItem('discord_token');
+        window.location.href = 'login.html';
+      }
     }
   }
 }
 </script>
 </body>
-</html>
+</html>s
