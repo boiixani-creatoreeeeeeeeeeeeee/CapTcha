@@ -1,109 +1,51 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login – CapTcha Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+  
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
   <style>
-    body { font-family: 'Inter', sans-serif; transition: opacity 0.4s ease; }
-    .glass-card { background: rgba(30,35,55,0.65); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); }
-    .input-field { background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease; }
-    .input-field:focus { border-color: rgba(99,102,241,0.5); outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-    .auth-btn { transition: all 0.3s ease; }
-    .auth-btn:hover { transform: translateY(-2px); }
-    .fade-out { opacity: 0; }
+    /* Add necessary styles here */
   </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 flex items-center justify-center min-h-screen p-4" x-data="loginApp()" x-init="init()">
+<body class="bg-gray-50 dark:bg-gray-900">
 
-<div class="w-full max-w-md glass-card rounded-3xl p-8 text-white">
-  <h2 class="text-3xl font-bold mb-6 text-center">Welcome Back</h2>
-  <form @submit.prevent="handleLogin" class="space-y-5">
-    <div>
-      <label class="block text-sm mb-2">Email</label>
-      <input type="email" x-model="email" class="input-field w-full px-4 py-3 rounded-lg text-white" placeholder="you@example.com" required>
-    </div>
-    <div>
-      <label class="block text-sm mb-2">Password</label>
-      <input type="password" x-model="password" class="input-field w-full px-4 py-3 rounded-lg text-white" placeholder="••••••••" required>
-    </div>
-
-    <div x-show="errorMessage" class="text-red-400 text-center text-sm" x-text="errorMessage"></div>
-
-    <button type="submit" :disabled="loading"
-      class="auth-btn w-full bg-gradient-to-r from-indigo-500 to-purple-600 py-3 rounded-lg font-semibold flex justify-center items-center gap-2"
-      :class="{ 'opacity-50 cursor-not-allowed': loading }">
-      <i class="fas" :class="loading ? 'fa-spinner fa-spin' : 'fa-sign-in-alt'"></i>
-      <span x-text="loading ? 'Signing in...' : 'Sign In'"></span>
-    </button>
+  <!-- Login Form -->
+  <form id="login-form">
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button type="submit">Login</button>
   </form>
 
-  <p class="text-gray-400 text-center mt-6 text-sm">
-    Don't have an account? <a href="register.html" class="text-indigo-400 hover:text-indigo-300">Register here</a>
-  </p>
-</div>
+  <script>
+    // Firebase Configuration (same as index)
+    const firebaseConfig = { /* your config */ };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9sJoZSzbmKJ-7F9jsYVmf7m4cMJ_JUuA",
-    authDomain: "captcha-finder.firebaseapp.com",
-    projectId: "captcha-finder",
-    storageBucket: "captcha-finder.firebasestorage.app",
-    messagingSenderId: "268327722037",
-    appId: "1:268327722037:web:54ba44e1d4ccc2c734e57c",
-    measurementId: "G-LX1WXZFJCW"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
-  function loginApp() {
-    return {
-      email: '', password: '', errorMessage: '', loading: false,
-
-      init() {
-        auth.onAuthStateChanged(user => {
-          if (user) window.location.href = 'dashboard.html';
+      auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          // Successfully logged in, redirect to dashboard
+          window.location.replace('dashboard.html');
+        })
+        .catch(error => {
+          console.error('Login failed:', error);
+          alert('Login failed! Please try again.');
         });
-      },
-
-      async handleLogin() {
-        this.loading = true; this.errorMessage = '';
-        try {
-          // Perform Firebase login
-          const userCred = await auth.signInWithEmailAndPassword(this.email.trim(), this.password);
-          const token = await userCred.user.getIdToken();
-
-          // Store user data
-          localStorage.setItem('firebase_user', JSON.stringify({
-            uid: userCred.user.uid,
-            email: userCred.user.email,
-            token
-          }));
-
-          // After successful login, redirect to dashboard
-          document.body.classList.add('fade-out');
-          setTimeout(() => window.location.href = 'dashboard.html', 400);
-        } catch (e) {
-          this.loading = false;
-          // Handle errors
-          switch (e.code) {
-            case 'auth/user-not-found': this.errorMessage = 'No account found with this email.'; break;
-            case 'auth/wrong-password': this.errorMessage = 'Incorrect password.'; break;
-            default: this.errorMessage = 'Login failed. Please try again.';
-          }
-        }
-      }
-    }
-  }
-</script>
+    });
+  </script>
 </body>
 </html>
