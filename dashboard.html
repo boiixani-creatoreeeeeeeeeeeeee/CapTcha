@@ -6,9 +6,9 @@
   <title>Dashboard – Captcha Finder</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* === SAME FULL CSS FROM INDEX.HTML === */
-    :root { --primary: #4a6fa5; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --light: #f8f9fa; --dark: #343a40; --bg: #f5f7fa; --card-bg: white; --text: #2d3748; --border: #e2e8f0; --header-bg: rgba(255,255,255,0.95); --footer-bg: #343a40; --footer-text: #ccc; --scrollbar-track: #f1f1f1; --scrollbar-thumb: #4a6fa5; --scrollbar-thumb-hover: #3a5a8a; }
-    [data-theme="dark"] { --primary: #6c9eff; --secondary: #a0aec0; --success: #48bb78; --danger: #f56565; --light: #2d3748; --dark: #f7fafc; --bg: #0f172a; --card-bg: #1e293b; --text: #e2e8f0; --border: #334155; --header-bg: rgba(15,23,42,0.95); --footer-bg: #0a0e1a; --footer-text: #94a3b8; --scrollbar-track: #1e293b; --scrollbar-thumb: #6c9eff; --scrollbar-thumb-hover: #5b8cff; }
+    /* SAME AS index.html */
+    :root { --primary: #4a6fa5; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --light: #f8f9fa; --dark: #343a40; --bg: #f5f7fa; --card-bg: white; --text: #2d3748; --border: #e2e8f0; --header-bg: rgba(255,255,255,0.95); --footer-bg: #343a40; --footer-text: #ccc; }
+    [data-theme="dark"] { --primary: #6c9eff; --secondary: #a0aec0; --success: #48bb78; --danger: #f56565; --light: #2d3748; --dark: #f7fafc; --bg: #0f172a; --card-bg: #1e293b; --text: #e2e8f0; --border: #334155; --header-bg: rgba(15,23,42,0.95); --footer-bg: #0a0e1a; --footer-text: #94a3b8; }
     * { margin:0; padding:0; box-sizing:border-box; transition:background .3s,color .3s,border-color .3s; }
     body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,var(--bg),color-mix(in srgb,var(--bg),black 20%)); color:var(--text); line-height:1.6; min-height:100vh; display:flex; flex-direction:column; }
     header { background:var(--header-bg); backdrop-filter:blur(10px); box-shadow:0 2px 10px rgba(0,0,0,.1); padding:1rem 0; position:sticky; top:0; z-index:100; }
@@ -16,24 +16,11 @@
     .header-content { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
     .logo { font-size:1.8rem; font-weight:700; color:var(--primary); text-decoration:none; display:flex; align-items:center; gap:.5rem; }
     .logo i { font-size:2rem; }
-    .user-menu { display:flex; gap:1rem; font-weight:500; }
-    .user-menu a, .user-menu button { background:none; border:none; color:var(--text); cursor:pointer; text-decoration:none; }
-    .user-menu .username { color:var(--primary); font-weight:600; }
-    .user-menu .logout { color:var(--danger); }
-    .user-menu .logout:hover { text-decoration:underline; }
+    .user-menu { display:flex; gap:1rem; align-items:center; font-weight:500; }
     .theme-toggle { background:var(--card-bg); border:2px solid var(--border); border-radius:50px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1rem; color:var(--text); box-shadow:0 4px 15px rgba(0,0,0,.1); transition:all .3s; }
     .theme-toggle:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.15); border-color:var(--primary); }
     main { flex:1; padding:3rem 0; }
     .hero { text-align:center; padding:2rem; background:var(--card-bg); border-radius:12px; margin-bottom:2rem; box-shadow:0 6px 20px rgba(0,0,0,.1); }
-    .search-section { background:var(--card-bg); padding:2rem; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,.1); margin-bottom:2rem; }
-    .search-box { display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
-    .input-group { flex:1; min-width:250px; position:relative; }
-    .input-group input { width:100%; padding:1rem 1rem 1rem 3rem; border:2px solid var(--border); border-radius:12px; background:var(--card-bg); color:var(--text); }
-    .input-group i { position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:var(--secondary); }
-    .btn { padding:1rem 2rem; border:none; border-radius:12px; font-weight:600; cursor:pointer; }
-    .btn-primary { background:var(--primary); color:white; }
-    .result-item { padding:1rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
-    .result-type { background:color-mix(in srgb,var(--primary),transparent 90%); color:var(--primary); padding:.25rem .75rem; border-radius:20px; font-size:.8rem; }
     footer { background:var(--footer-bg); color:var(--footer-text); padding:2rem 0; text-align:center; font-size:.9rem; }
   </style>
 </head>
@@ -42,55 +29,38 @@
     <div class="container">
       <div class="header-content">
         <a href="/" class="logo"><i class="fas fa-shield-alt"></i>Captcha Finder</a>
-        <div style="display:flex;gap:1rem;align-items:center;">
-          <span id="username" class="username"></span>
-          <button class="logout" onclick="logout()">Logout</button>
-          <div class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></div>
-        </div>
+        <div class="user-menu" id="userMenu"></div>
+        <div class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></div>
       </div>
     </div>
   </header>
 
   <main>
     <div class="container">
-      <section class="hero"><h2>Welcome, <span id="user"></span>!</h2></section>
-
-      <section class="search-section">
-        <h3>Quick Scan</h3>
-        <div class="search-box">
-          <div class="input-group"><i class="fas fa-globe"></i><input type="url" id="quickUrl" placeholder="https://example.com"></div>
-          <button class="btn btn-primary" id="quickScan">Scan</button>
-        </div>
-        <div class="results" id="quickResult" style="display:none;"></div>
-      </section>
-
-      <section class="search-section">
-        <h3>Scan History</h3>
-        <div id="history"></div>
+      <section class="hero">
+        <h2>Dashboard</h2>
+        <p>Welcome back! This is your private area.</p>
       </section>
     </div>
   </main>
 
   <footer>© 2025 Captcha Finder</footer>
 
-  <script>
-    // Firebase Auth State
-firebase.auth().onAuthStateChanged(user => {
-  const userMenu = document.getElementById('userMenu');
-  if (user) {
-    const displayName = user.email.split('@')[0];
-    userMenu.innerHTML = `<span class="username">${displayName}</span> <button class="logout" onclick="logout()">Logout</button>`;
-    localStorage.setItem('user', JSON.stringify(user));
-  } else {
-    userMenu.innerHTML = `<a href="login.html">Login</a> <a href="register.html">Register</a>`;
-    localStorage.removeItem('user');
-    if (location.pathname.includes('dashboard.html')) location.href = '/login.html';
-  }
-});
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 
-window.logout = () => {
-  firebase.auth().signOut().then(() => location.reload());
-};
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyA9sJoZSzbmKJ-7F9jsYVmf7m4cMJ_JUuA",
+      authDomain: "captcha-finder.firebaseapp.com",
+      projectId: "captcha-finder",
+      storageBucket: "captcha-finder.firebasestorage.app",
+      messagingSenderId: "268327722037",
+      appId: "1:268327722037:web:54ba44e1d4ccc2c734e57c",
+      measurementId: "G-LX1WXZFJCW"
+    };
+    firebase.initializeApp(firebaseConfig);
+
     const toggle = document.getElementById('themeToggle'), body = document.body, icon = toggle.querySelector('i');
     const theme = localStorage.getItem('theme') || 'light'; body.dataset.theme = theme;
     icon.classList.toggle('fa-sun', theme === 'dark'); icon.classList.toggle('fa-moon', theme === 'light');
@@ -101,35 +71,18 @@ window.logout = () => {
       icon.classList.toggle('fa-sun', !isDark); icon.classList.toggle('fa-moon', isDark);
     };
 
-    fetch('/api/auth/me').then(r=>r.json()).then(d=>{
-      if (!d.username) location.href = '/login.html';
-      document.getElementById('user').textContent = d.username;
+    const userMenu = document.getElementById('userMenu');
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) location.href = '/login.html';
+      const name = user.email.split('@')[0];
+      userMenu.innerHTML = `
+        <a href="dashboard.html" class="btn btn-outline" style="padding:0.5rem 1rem;font-size:0.9rem;">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <span class="username">${name}</span>
+        <button class="logout" onclick="firebase.auth().signOut().then(()=>location.href='/')">Logout</button>
+      `;
     });
-
-    window.logout = async () => { await fetch('/api/auth/logout',{method:'POST'}); location.href = '/'; };
-
-    document.getElementById('quickScan').onclick = async () => {
-      const url = document.getElementById('quickUrl').value.trim();
-      if (!url) return alert('Enter URL');
-      const res = await fetch('/api/scan', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url})});
-      const data = await res.json();
-      const el = document.getElementById('quickResult'); el.style.display='block';
-      el.innerHTML = render(data.captchas||[], url);
-    };
-
-    async function loadHistory() {
-      const res = await fetch('/api/scan/history');
-      const scans = await res.json();
-      const el = document.getElementById('history');
-      if (!scans.length) return el.innerHTML = '<p>No scans yet.</p>';
-      el.innerHTML = scans.map(s=>`<div class="result-item"><div><strong>${s.url}</strong><br><small>${new Date(s.scanned_at).toLocaleString()}</small></div><div>${s.result.map(r=>`<span class="result-type">${r.type}</span>`).join(' ')}</div></div>`).join('');
-    }
-    loadHistory();
-
-    function render(captchas, url) {
-      if (!captchas.length) return `<p>No CAPTCHA on <strong>${url}</strong></p>`;
-      return `<h4>${captchas.length} on <strong>${url}</strong></h4>` + captchas.map(c=>`<div class="result-item"><div><strong>${c.type}</strong></div><div class="result-type">${c.confidence}%</div></div>`).join('');
-    }
   </script>
 </body>
 </html>
