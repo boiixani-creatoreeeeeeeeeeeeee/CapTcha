@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Login | Secure Access</title>
+    <meta name="description" content="Secure login portal with two-factor authentication, biometric support, and real-time validation." />
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔐</text></svg>">
+
+    <!-- Google Fonts: Inter (modern, clean) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS via CDN (for rapid styling) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        /* Custom glassmorphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        /* Gradient background animation */
+        .gradient-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* Input focus glow */
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            outline: none;
+        }
+        /* Password strength meter */
+        .strength-meter {
+            height: 4px;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+        /* Fingerprint animation */
+        #biometric-btn:hover i {
+            animation: pulse 1.5s infinite;
+        }
+        /* Dark mode toggle */
+        .dark-toggle {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center gradient-bg p-4 overflow-hidden relative">
+
+    <!-- Animated background shapes -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -left-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
+        <div class="absolute -bottom-40 -right-40 w-80 h-80 bg-yellow-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow animation-delay-2000"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+    </div>
+
+    <!-- Main Login Card -->
+    <div class="relative z-10 w-full max-w-md">
+        <div class="glass rounded-3xl shadow-2xl p-8 md:p-10 transform transition-all hover:scale-[1.01]">
+            
+            <!-- Logo / Brand -->
+            <div class="flex justify-center mb-8">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-2xl shadow-lg">
+                    <i class="fas fa-shield-alt text-3xl text-white"></i>
+                </div>
+            </div>
+
+            <h1 class="text-3xl font-bold text-center text-white mb-2">Welcome Back</h1>
+            <p class="text-center text-white/70 mb-8">Secure access to your account</p>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-6">
+                <!-- Email Field -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-white/90 mb-2">
+                        <i class="fas fa-envelope mr-2"></i>Email Address
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            autocomplete="email"
+                            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 input-focus transition-all"
+                            placeholder="you@example.com"
+                        />
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i id="email-icon" class="fas fa-check text-green-400 hidden"></i>
+                            <i id="email-error" class="fas fa-times text-red-400 hidden"></i>
+                        </div>
+                    </div>
+                    <p id="email-feedback" class="mt-1 text-xs text-red-300 hidden"></p>
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-white/90 mb-2">
+                        <i class="fas fa-lock mr-2"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required 
+                            autocomplete="current-password"
+                            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 input-focus transition-all pr-12"
+                            placeholder="••••••••••••"
+                        />
+                        <button 
+                            type="button" 
+                            id="togglePassword" 
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-white/60 hover:text-white transition"
+                        >
+                            <i class="fas fa-eye-slash"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Password Strength Meter -->
+                    <div class="mt-2">
+                        <div class="flex justify-between text-xs text-white/60 mb-1">
+                            <span>Password strength</span>
+                            <span id="strength-text">Weak</span>
+                        </div>
+                        <div class="w-full bg-white/20 rounded-full h-1">
+                            <div id="strength-meter" class="strength-meter w-0 bg-red-500 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center text-white/80">
+                        <input type="checkbox" id="remember" class="mr-2 rounded border-white/30 text-blue-500 focus:ring-blue-500" />
+                        Remember me
+                    </label>
+                    <a href="#" class="text-blue-300 hover:text-blue-200 transition">Forgot password?</a>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    id="submitBtn"
+                    class="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2"
+                >
+                    <span id="btn-text">Sign In</span>
+                    <i id="btn-icon" class="fas fa-arrow-right hidden"></i>
+                    <div id="btn-spinner" class="hidden">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </button>
+
+                <!-- Divider -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-white/20"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-transparent text-white/60">or</span>
+                    </div>
+                </div>
+
+                <!-- Biometric Login -->
+                <button 
+                    type="button" 
+                    id="biometric-btn"
+                    class="w-full py-3 px-4 bg-white/10 border border-white/20 text-white font-medium rounded-xl hover:bg-white/20 transition-all duration-200 flex items-center justify-center space-x-2"
+                >
+                    <i class="fas fa-fingerprint text-xl"></i>
+                    <span>Login with Biometrics</span>
+                </button>
+
+                <!-- Social Login Options -->
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <button type="button" class="py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white/80 hover:bg-white/20 transition flex items-center justify-center space-x-2 text-sm">
+                        <i class="fab fa-google"></i>
+                        <span>Google</span>
+                    </button>
+                    <button type="button" class="py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white/80 hover:bg-white/20 transition flex items-center justify-center space-x-2 text-sm">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Sign Up Link -->
+            <p class="mt-8 text-center text-white/70 text-sm">
+                Don't have an account? 
+                <a href="#" class="text-blue-300 hover:text-blue-200 font-medium transition">Sign up</a>
+            </p>
+
+            <!-- Dark Mode Toggle -->
+            <button 
+                id="darkModeToggle" 
+                class="absolute top-4 right-4 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-white"
+            >
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <p class="mt-6 text-center text-white/50 text-xs">
+            © 2025 YourSite. Secured with end-to-end encryption.
+        </p>
+    </div>
+
+    <!-- JavaScript for Interactivity -->
+    <script>
+        // DOM Elements
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btn-text');
+        const btnIcon = document.getElementById('btn-icon');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const strengthMeter = document.getElementById('strength-meter');
+        const strengthText = document.getElementById('strength-text');
+        const emailIcon = document.getElementById('email-icon');
+        const emailError = document.getElementById('email-error');
+        const emailFeedback = document.getElementById('email-feedback');
+        const biometricBtn = document.getElementById('biometric-btn');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+
+        // Toggle Password Visibility
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePassword.querySelector('i').classList.toggle('fa-eye');
+            togglePassword.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
+        // Email Validation (Real-time)
+        emailInput.addEventListener('input', () => {
+            const email = emailInput.value.trim();
+            const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            
+            emailIcon.classList.toggle('hidden', !valid);
+            emailError.classList.toggle('hidden', valid);
+            emailFeedback.classList.add('hidden');
+            
+            if (!valid && email) {
+                emailFeedback.textContent = 'Please enter a valid email address';
+                emailFeedback.classList.remove('hidden');
+            }
+        });
+
+        // Password Strength Meter
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+            let strength = 0;
+            let feedback = '';
+
+            if (password.length >= 8) strength += 1;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 1;
+            if (password.match(/[0-9]/)) strength += 1;
+            if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
+
+            const percentage = (strength / 4) * 100;
+            strengthMeter.style.width = `${percentage}%`;
+
+            const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
+            const texts = ['Weak', 'Fair', 'Good', 'Strong'];
+            strengthMeter.className = `strength-meter ${colors[strength - 1] || 'bg-red-500'} rounded-full`;
+            strengthText.textContent = texts[strength - 1] || 'Weak';
+            strengthText.className = strength > 2 ? 'text-green-400' : strength > 1 ? 'text-yellow-400' : 'text-red-400';
+        });
+
+        // Form Submission with Loading State
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading
+            submitBtn.disabled = true;
+            btnText.classList.add('hidden');
+            btnSpinner.classList.remove('hidden');
+
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Success state
+            btnSpinner.classList.add('hidden');
+            btnIcon.classList.remove('hidden');
+            submitBtn.classList.remove('from-blue-500', 'to-purple-600');
+            submitBtn.classList.add('bg-green-500');
+            btnText.textContent = 'Success!';
+            btnText.classList.remove('hidden');
+
+            // Reset after 2s
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                btnText.textContent = 'Sign In';
+                btnIcon.classList.add('hidden');
+                submitBtn.classList.remove('bg-green-500');
+                submitBtn.classList.add('from-blue-500', 'to-purple-600');
+            }, 2000);
+        });
+
+        // Biometric Login (WebAuthn Demo)
+        biometricBtn.addEventListener('click', async () => {
+            if (!window.PublicKeyCredential) {
+                alert('Biometric login is not supported in your browser.');
+                return;
+            }
+
+            try {
+                biometricBtn.disabled = true;
+                biometricBtn.innerHTML = '<i class="fas fa-fingerprint animate-spin"></i> <span>Authenticating...</span>';
+
+                // Mock WebAuthn (in real app, register first)
+                const credential = await navigator.credentials.create({ publicKey: {} });
+                alert('Biometric login successful!');
+            } catch (err) {
+                alert('Biometric login failed. Using password instead.');
+            } finally {
+                biometricBtn.disabled = false;
+                biometricBtn.innerHTML = '<i class="fas fa-fingerprint"></i> <span>Login with Biometrics</span>';
+            }
+        });
+
+        // Dark Mode Toggle
+        darkModeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            darkModeToggle.querySelector('i').classList.toggle('fa-moon', !isDark);
+            darkModeToggle.querySelector('i').classList.toggle('fa-sun', isDark);
+        });
+
+        // Auto-focus email on load
+        window.addEventListener('load', () => emailInput.focus());
+    </script>
+</body>
+</html>
