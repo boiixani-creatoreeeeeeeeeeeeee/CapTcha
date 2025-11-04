@@ -50,9 +50,12 @@
     }
     .avatar {
       transition: transform 0.3s ease;
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
     }
     .avatar:hover {
-      transform: scale(1.1);
+      transform: scale(1.15);
     }
   </style>
 </head>
@@ -71,19 +74,18 @@
       <a href="#features" class="hover:text-indigo-400 transition">Features</a>
       <a href="#pricing" class="hover:text-indigo-400 transition">Pricing</a>
 
-      <!-- NOT LOGGED IN -->
+      <!-- NOT LOGGED IN: Show Login -->
       <template x-if="!user.id">
         <a href="login.html" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">Login</a>
       </template>
 
-      <!-- LOGGED IN -->
+      <!-- LOGGED IN: Show Avatar + Dashboard -->
       <template x-if="user.id">
         <div class="flex items-center space-x-3">
-          <a href="dashboard.html" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">Dashboard</a>
-          <div class="flex items-center space-x-2">
-            <img :src="user.avatar" alt="Avatar" class="w-9 h-9 rounded-full avatar object-cover ring-2 ring-indigo-500">
-            <span class="text-sm font-medium" x-text="user.global_name || user.username"></span>
-          </div>
+          <a href="dashboard.html" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition text-sm font-medium">Dashboard</a>
+          <a href="dashboard.html">
+            <img :src="user.transparent" alt="Profile" class="w-9 h-9 rounded-full avatar ring-2 ring-indigo-500">
+          </a>
         </div>
       </template>
 
@@ -115,9 +117,8 @@
       <!-- LOGGED IN -->
       <template x-if="user.id">
         <a href="dashboard.html" class="block font-medium text-indigo-600">Dashboard</a>
-        <div class="flex items-center space-x-2 py-2">
-          <img :src="user.avatar" alt="Avatar" class="w-8 h-8 rounded-full ring-2 ring-indigo-500">
-          <span x-text="user.global_name || user.username"></span>
+        <div class="flex items-center space-x-2 py-1">
+          <img :src="user.avatar" alt="Profile" class="w-8 h-8 rounded-full ring-2 ring-indigo-500">
         </div>
       </template>
 
@@ -199,7 +200,7 @@
           <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Unlimited solves</li>
           <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Basic support</li>
         </ul>
-        <button onclick="buyPlan(390153, 555558, this, 'Buy Day Key')" class="buy-btn w-full py-2 border border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition">BuyBuy Day Key</button>
+        <button onclick="buyPlan(390153, 555558, this, 'Buy Day Key')" class="buy-btn w-full py-2 border border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition">Buy Day Key</button>
       </div>
       <!-- Week Key -->
       <div class="float-card rounded-2xl p-6 glass border border-gray-200 dark:border-gray-700 text-center">
@@ -277,7 +278,7 @@ function app() {
   return {
     mobileMenu: false,
     dark: localStorage.getItem('dark') === 'true',
-    user: { id: '', global_name: '', username: '', avatar: '' },
+    user: { id: '', avatar: '' },
 
     init() {
       // Theme
@@ -289,7 +290,7 @@ function app() {
         this.dark = true;
       }
 
-      // Check login state
+      // Check login
       const token = localStorage.getItem('discord_token');
       if (token) {
         this.fetchUser(token);
@@ -304,10 +305,8 @@ function app() {
       .then(data => {
         this.user = {
           id: data.id,
-          username: data.username,
-          global_name: data.global_name || data.username,
           avatar: data.avatar
-            ? `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png?size=256`
+            ? `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png?size=128`
             : `https://cdn.discordapp.com/embed/avatars/${(data.discriminator || 0) % 5}.png`
         };
       })
