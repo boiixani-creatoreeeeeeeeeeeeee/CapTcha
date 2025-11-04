@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -7,121 +7,224 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body { font-family: 'Inter', sans-serif; }
     .glass { backdrop-filter: blur(12px); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); }
+    .avatar { transition: transform 0.3s ease; }
+    .avatar:hover { transform: scale(1.1); }
   </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 text-gray-100 min-h-screen" x-data="dashboard()" x-init="init()">
 
-<header class="fixed top-0 w-full glass border-b border-white/10 z-50">
-  <nav class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-    <a href="index.html" class="flex items-center space-x-2">
-      <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex justify-center items-center font-bold">CT</div>
+<!-- Navbar -->
+<header class="fixed top-0 w-full z-50 glass border-b border-white/10">
+  <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <a href="/" class="flex items-center space-x-2">
+      <img src="assets/logo.svg" alt="CapTcha Tool" class="w-10 h-10">
       <span class="text-xl font-bold">CapTcha Tool</span>
     </a>
-    <div class="flex items-center gap-3" x-show="user.email">
-      <span class="text-sm" x-text="user.email"></span>
-      <button @click="logout()" class="text-red-400 hover:text-red-300 transition">
-        <i class="fas fa-sign-out-alt mr-1"></i>Logout
-      </button>
+    <div class="flex items-center space-x-4" x-show="user.id">
+      <div class="flex items-center space-x-3">
+        <img :src="user.avatar" alt="Avatar" class="w-9 h-9 rounded-full avatar object-cover ring-2 ring-indigo-500">
+        <span class="text-sm font-medium" x-text="user.global_name || user.username"></span>
+      </div>
+      <button @click="copyKey()" class="text-sm px-3 py-1 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition">Copy API Key</button>
+      <button @click="logout()" class="text-sm text-red-400 hover:underline">Logout</button>
     </div>
   </nav>
 </header>
 
-<main class="pt-24 pb-12 max-w-6xl mx-auto px-4 text-center">
-  <template x-if="loading">
-    <div class="py-24">
-      <div class="animate-spin h-12 w-12 mx-auto border-4 border-indigo-500 border-t-transparent rounded-full mb-4"></div>
-      <p>Loading your dashboard...</p>
-    </div>
-  </template>
+<div class="pt-24 container mx-auto px-4 max-w-6xl">
 
-  <template x-if="!loading && user.email">
-    <div>
-      <h1 class="text-3xl font-bold mb-4">Welcome, <span x-text="user.email"></span></h1>
-      <p class="text-gray-400 mb-8">Your account is securely authenticated with Firebase.</p>
-      <canvas id="chart" height="100"></canvas>
-    </div>
-  </template>
+  <!-- Profile -->
+  <div class="bg-white/5 glass rounded-2xl p-6 mb-8 text-center" x-show="user.id">
+    <img :src="user.avatar" alt="Avatar" class="w-24 h-24 rounded-full mx-auto ring-4 ring-indigo-500 shadow-xl avatar mb-4">
+    <h1 class="text-3xl font-bold" x-text="user.global_name || user.username"></h1>
+    <p class="text-gray-400" x-text="user.email || 'Hidden'"></p>
+    <p class="text-xs text-gray-500 mt-1">ID: <span x-text="user.id"></span></p>
+  </div>
 
-  <template x-if="error">
-    <div class="py-24 text-red-400">
-      <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
-      <p>Authentication failed or session expired.</p>
-      <a href="login.html" class="block mt-4 bg-indigo-600 px-6 py-3 rounded-lg text-white">Back to Login</a>
+  <!-- Loading -->
+  <div class="text-center py-20" x-show="!user.id && !error">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+    <p class="mt-4 text-gray-400">Signing you in...</p>
+  </div>
+
+  <!-- Error (only if real issue) -->
+  <div class="text-center py-20" x-show="error">
+    <p class="text-red-400 text-lg">Login failed. <a href="login.html" class="underline">Try again</a></p>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" x-show="user.id">
+    <div class="bg-white/5 glass p-6 rounded-xl">
+      <p class="text-sm text-gray-400">Solves Today</p>
+      <p class="text-3xl font-bold">842</p>
     </div>
-  </template>
-</main>
+    <div class="bg-white/5 glass p-6 rounded-xl">
+      <p class="text-sm text-gray-400">Success Rate</p>
+      <p class="text-3xl font-bold text-green-400">99.4%</p>
+    </div>
+    <div class="bg-white/5 glass p-6 rounded-xl">
+      <p class="text-sm text-gray-400">Avg Solve Time</p>
+      <p class="text-3xl font-bold text-indigo-400">1.1s</p>
+    </div>
+    <div class="bg-white/5 glass p-6 rounded-xl">
+      <p class="text-sm text-gray-400">Plan</p>
+      <p class="text-3xl font-bold text-purple-400">Free</p>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="bg-white/5 glass p-6 rounded-xl mb-8" x-show="user.id">
+    <h2 class="text-xl font-semibold mb-4 text-indigo-300">Solve Activity (Last 7 Days)</h2>
+    <canvas id="solveChart" height="100"></canvas>
+  </div>
+
+  <!-- API Key -->
+  <div class="bg-white/5 glass p-6 rounded-xl" x-show="user.id">
+    <h2 class="text-xl font-semibold mb-4 text-indigo-300">Your API Key</h2>
+    <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3">
+      <code class="flex-1 bg-gray-800/50 px-4 py-2 rounded-lg font-mono text-sm break-all" x-text="apiKey"></code>
+      <button @click="regenerateKey()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Regenerate</button>
+    </div>
+    <p class="text-sm text-gray-400 mt-3">Use this key in your scripts. Keep it secret!</p>
+  </div>
+</div>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9sJoZSzbmKJ-7F9jsYVmf7m4cMJ_JUuA",
-    authDomain: "captcha-finder.firebaseapp.com",
-    projectId: "captcha-finder",
-    storageBucket: "captcha-finder.firebasestorage.app",
-    messagingSenderId: "268327722037",
-    appId: "1:268327722037:web:54ba44e1d4ccc2c734e57c"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+function dashboard() {
+  return {
+    user: { id: '', global_name: '', username: '', email: '', avatar: '' },
+    apiKey: '',
+    error: false,
 
-  function dashboard() {
-    return {
-      user: {}, loading: true, error: false,
+    init() {
+      let token = this.getTokenFromHash();
 
-      init() {
-        auth.onAuthStateChanged(async (user) => {
-          if (!user) {
-            this.error = true;
-            this.loading = false;
-            setTimeout(() => window.location.href = 'login.html', 2500);
-            return;
-          }
+      // If no hash, try localStorage
+      if (!token) {
+        token = localStorage.getItem('discord_token');
+      }
 
-          const token = await user.getIdToken();
-          localStorage.setItem('firebase_user', JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            token
-          }));
-          this.user = { email: user.email };
-          this.loading = false;
-          this.$nextTick(() => this.loadChart());
-        });
-      },
+      // NO TOKEN? → Go to login
+      if (!token) {
+        return this.redirectToLogin();
+      }
 
-      logout() {
-        auth.signOut().then(() => {
-          localStorage.removeItem('firebase_user');
-          window.location.href = 'login.html';
-        });
-      },
+      // SAVE TOKEN
+      localStorage.setItem('discord_token', token);
 
-      loadChart() {
-        const ctx = document.getElementById('chart');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-            datasets: [{
-              label: 'Solves',
-              data: [12, 19, 7, 15, 23, 18, 24],
-              borderColor: '#a78bfa',
-              backgroundColor: 'rgba(167,139,250,0.2)',
-              fill: true,
-              tension: 0.4
-            }]
-          },
-          options: { plugins: { legend: { display: false } } }
-        });
+      // Clean URL
+      this.cleanUrl();
+
+      // Fetch user
+      this.fetchUser(token);
+    },
+
+    getTokenFromHash() {
+      const hash = window.location.hash.substring(1);
+      if (!hash) return null;
+      const params = new URLSearchParams(hash);
+      const token = params.get('access_token');
+      if (token) {
+        history.replaceState({}, '', '/CapTcha/dashboard.html');
+      }
+      return token;
+    },
+
+    cleanUrl() {
+      if (window.location.hash) {
+        history.replaceState({}, '', '/CapTcha/dashboard.html');
+      }
+    },
+
+    fetchUser(token) {
+      fetch('https://discord.com/api/v10/users/@me', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(async r => {
+        if (!r.ok) {
+          const text = await r.text();
+          console.error('Discord API Error:', r.status, text);
+          throw new Error(`HTTP ${r.status}`);
+        }
+        return r.json();
+      })
+      .then(data => {
+        this.user = {
+          id: data.id,
+          username: data.username,
+          global_name: data.global_name || data.username,
+          email: data.email || 'Hidden',
+          avatar: data.avatar
+            ? `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png?size=256`
+            : `https://cdn.discordapp.com/embed/avatars/${(data.discriminator || 0) % 5}.png`
+        };
+        this.apiKey = 'ct_sk_' + Math.random().toString(36).substr(2, 32);
+        this.initChart();
+      })
+      .catch(err => {
+        console.warn('Login failed, clearing token:', err.message);
+        localStorage.removeItem('discord_token');
+        this.error = true;
+        setTimeout(() => this.redirectToLogin(), 2000);
+      });
+    },
+
+    redirectToLogin() {
+      window.location.replace('login.html');
+    },
+
+    initChart() {
+      const ctx = document.getElementById('solveChart');
+      if (!ctx) return;
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [{
+            data: [120, 190, 300, 250, 400, 380, 842],
+            borderColor: '#a78bfa',
+            backgroundColor: 'rgba(167, 139, 250, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+    },
+
+    copyKey() {
+      navigator.clipboard.writeText(this.apiKey).then(() => {
+        const toast = document.createElement('div');
+        toast.textContent = 'Copied!';
+        toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+      });
+    },
+
+    regenerateKey() {
+      if (confirm('Regenerate API key?')) {
+        this.apiKey = 'ct_sk_' + Math.random().toString(36).substr(2, 32);
+      }
+    },
+
+    logout() {
+      if (confirm('Logout?')) {
+        localStorage.removeItem('discord_token');
+        window.location.replace('login.html');
       }
     }
   }
+}
 </script>
 </body>
 </html>
