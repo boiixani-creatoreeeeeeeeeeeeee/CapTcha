@@ -4,46 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login – CapTcha Tool</title>
-
-  <!-- Tailwind + Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .glass-card {
-      background: rgba(30, 35, 55, 0.65);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-    }
-    .discord-btn {
-      background: #5865F2;
-      transition: all 0.3s ease;
-    }
-    .discord-btn:hover {
-      background: #4752C4;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(88, 101, 242, 0.3);
-    }
-    .bird-svg {
-      animation: float 6s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-10px) rotate(2deg); }
-    }
+    .glass-card { background: rgba(30, 35, 55, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
+    .discord-btn { background: #5865F2; transition: all 0.3s ease; }
+    .discord-btn:hover { background: #4752C4; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(88, 101, 242, 0.3); }
+    .bird-svg { animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
   </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 min-h-screen flex items-center justify-center p-4">
-
 <div class="w-full max-w-5xl">
   <div class="glass-card rounded-3xl overflow-hidden">
-
     <div class="grid md:grid-cols-2 gap-0">
-
       <!-- Left Panel -->
       <div class="p-8 md:p-12 flex flex-col justify-between text-white">
         <div>
@@ -51,32 +27,24 @@
           <p class="text-gray-300 text-sm md:text-base mb-8 leading-relaxed">
             Login with the easy built-in Discord authentication to access your personal dashboard!
           </p>
-
           <ul class="space-y-3">
             <li class="flex items-center text-sm md:text-base">
-              <i class="fas fa-check-circle text-green-400 mr-3"></i>
-              <span>Fast</span>
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Fast</span>
             </li>
             <li class="flex items-center text-sm md:text-base">
-              <i class="fas fa-check-circle text-green-400 mr-3"></i>
-              <span>Simple</span>
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Simple</span>
             </li>
             <li class="flex items-center text-sm md:text-base">
-              <i class="fas fa-check-circle text-green-400 mr-3"></i>
-              <span>Responsive</span>
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Responsive</span>
             </li>
           </ul>
         </div>
-
-        <!-- Birdhouse Illustration -->
         <div class="mt-10 md:mt-16 flex justify-center md:block">
           <svg width="180" height="180" viewBox="0 0 200 200" class="hidden md:block opacity-80">
             <g transform="translate(100,100)">
-              <!-- House -->
               <path d="M-40,-40 L-40,-70 L-10,-85 L40,-70 L40,-40 L20,-40 L20,10 L-20,10 L-20,-40 Z" fill="#1e293b" stroke="#475569" stroke-width="2"/>
               <rect x="-15" y="-35" width="30" height="45" fill="#1e40af"/>
               <circle cx="0" cy="-55" r="8" fill="#fbbf24"/>
-              <!-- Birds -->
               <path d="M-50,0 Q-60,-10 -55,-20 Q-50,-25 -45,-20 Q-40,-10 -50,0" fill="#fb923c"/>
               <path d="M50,5 Q60,-5 55,-15 Q50,-20 45,-15 Q40,-5 50,5" fill="#fb923c"/>
               <path d="M-30,-30 Q-35,-35 -32,-40 Q-28,-42 -25,-38 Q-22,-35 -27,-32" fill="#60a5fa"/>
@@ -84,15 +52,12 @@
           </svg>
         </div>
       </div>
-
       <!-- Right Panel -->
       <div class="p-8 md:p-12 bg-slate-900/50 flex flex-col items-center justify-center text-center text-white">
-        
-        <!-- Floating Bird -->
         <div class="mb-8">
           <svg width="120" height="120" viewBox="0 0 140 140" class="bird-svg mx-auto">
             <g transform="translate(70,70)">
-              <path d="M0,-40 Q-15,-50 -30,-45 Q-45,-40 -50,-25 Q-45,-10 -30,0 Q-15,-5 0,-15 Q15,-5 30,0 Q45,-10 50,-25 Q45,-40 30,-45 Q15,-50 0,-40" 
+              <path d="M0,-40 Q-15,-50 -30,-45 Q-45,-40 -50,-25 Q-45,-10 -30,0 Q-15,-5 0,-15 Q15,-5 30,0 Q45,-10 50,-25 Q45,-40 30,-45 Q15,-50 0,-40"
                     fill="url(#birdGradient)" stroke="#60a5fa" stroke-width="2"/>
               <defs>
                 <linearGradient id="birdGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -100,31 +65,24 @@
                   <stop offset="100%" stop-color="#60a5fa"/>
                 </linearGradient>
               </defs>
-              <!-- Wings -->
               <path d="M-35,-15 Q-50,-25 -45,-35 Q-35,-40 -25,-30" fill="#60a5fa" opacity="0.8"/>
               <path d="M35,-15 Q50,-25 45,-35 Q35,-40 25,-30" fill="#60a5fa" opacity="0.8"/>
             </g>
           </svg>
         </div>
-
         <h2 class="text-2xl md:text-3xl font-bold mb-3">Welcome Back!</h2>
         <p class="text-gray-400 text-sm md:text-base mb-10 max-w-xs">
           Thanks for using CapTcha Tool. You can now login to your dashboard.
         </p>
-
-        <!-- Discord Button -->
-        <a href="https://discord.com/oauth2/authorize?client_id=963238863256567848&response_type=code&redirect_uri=https%3A%2F%2Fcapovh.github.io%2FCapTcha%2Fdashboard.html&scope=guilds+email+identify"
+        <a href="https://discord.com/oauth2/authorize?client_id=963238863256567848&response_type=token&redirect_uri=https%3A%2F%2Fcapovh.github.io%2FCapTcha%2Fdashboard.html&scope=identify%20email"
            class="discord-btn text-white font-semibold px-8 py-3 rounded-full flex items-center gap-3 text-lg w-fit">
           <i class="fab fa-discord"></i>
           Sign in with Discord
           <i class="fas fa-arrow-right ml-1"></i>
         </a>
-
       </div>
-
     </div>
   </div>
 </div>
-
 </body>
 </html>
