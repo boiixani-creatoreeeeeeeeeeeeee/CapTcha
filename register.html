@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register – CapTcha Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .glass { background: rgba(255,255,255,0.12); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.2); }
+    .dark .glass { background: rgba(15,15,26,0.6); border: 1px solid rgba(255,255,255,0.08); }
+    .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+    .input-focus:focus { box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3); outline: none; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4" x-data="registerApp()">
+  <div class="fixed inset-0 gradient-bg opacity-90"></div>
+  <div class="relative z-10 w-full max-w-md">
+    <div class="glass rounded-3xl shadow-2xl p-8 md:p-10">
+      <div class="flex justify-center mb-8">
+        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">CT</div>
+      </div>
+      <h1 class="text-3xl font-bold text-center text-white mb-2">Create Account</h1>
+      <p class="text-center text-white/70 mb-8">Join CapTcha Tool today</p>
+
+      <form @submit.prevent="register" class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-white/90 mb-2">Email</label>
+          <input type="email" x-model="email" required class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 input-focus" placeholder="you@example.com" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-white/90 mb-2">Password</label>
+          <div class="relative">
+            <input :type="show ? 'text' : 'password'" x-model="password" required class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 input-focus pr-12" placeholder="••••••••" />
+            <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center text-white/60 hover:text-white">
+              <i x-show="!show" class="fas fa-eye-slash"></i>
+              <i x-show="show" class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div x-show="error" class="bg-red-500/20 text-red-300 p-3 rounded-lg text-center" x-text="error"></div>
+        <div x-show="success" class="bg-green-500/20 text-green-300 p-3 rounded-lg text-center">Account created! Redirecting...</div>
+        <button :disabled="loading" class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg disabled:opacity-70 flex items-center justify-center">
+          <span x-show="!loading">Register</span>
+          <svg x-show="loading" class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-white/70">
+        Already have an account? <a href="login.html" class="text-indigo-300 hover:text-indigo-200">Login</a>
+      </p>
+
+      <button @click="$dispatch('toggle-dark')" class="absolute top-4 right-4 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white">
+        <i x-show="!$store.dark" class="fas fa-moon"></i>
+        <i x-show="$store.dark" class="fas fa-sun text-yellow-400"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = { /* SAME AS ABOVE */ };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function registerApp() {
+      return {
+        email: '', password: '', show: false, loading: false, error: '', success: false,
+        async register() {
+          this.loading = true; this.error = ''; this.success = false;
+          try {
+            await auth.createUserWithEmailAndPassword(this.email, this.password);
+            this.success = true;
+            setTimeout(() => window.location.href = 'dashboard.html', 1500);
+          } catch (err) {
+            this.error = err.code === 'auth/email-already-in-use' ? 'Email already registered.' : 'Registration failed.';
+          } finally { this.loading = false; }
+        }
+      };
+    }
+
+    document.addEventListener('alpine:init', () => {
+      Alpine.store('dark', localStorage.getItem('dark') === 'true');
+      Alpine.effect(() => {
+        document.documentElement.classList.toggle('dark', Alpine.store('dark'));
+        localStorage.setItem('dark', Alpine.store('dark'));
+      });
+    });
+    document.addEventListener('toggle-dark', () => Alpine.store('dark', !Alpine.store('dark')));
+  </script>
+</body>
+</html>
