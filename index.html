@@ -1,86 +1,321 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CapTcha Tool</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CapTcha • Advanced CAPTCHA Scanner</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root { --primary: #4a6fa5; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --light: #f8f9fa; --dark: #343a40; --bg: #f5f7fa; --card-bg: white; --text: #2d3748; --border: #e2e8f0; --header-bg: rgba(255,255,255,0.95); --footer-bg: #343a40; --footer-text: #ccc; }
-    [data-theme="dark"] { --primary: #6c9eff; --secondary: #a0aec0; --success: #48bb78; --danger: #f56565; --light: #2d3748; --dark: #f7fafc; --bg: #0f172a; --card-bg: #1e293b; --text: #e2e8f0; --border: #334155; --header-bg: rgba(15,23,42,0.95); --footer-bg: #0a0e1a; --footer-text: #94a3b8; }
-    * { margin:0; padding:0; box-sizing:border-box; transition:background .3s,color .3s,border-color .3s; }
-    body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,var(--bg),color-mix(in srgb,var(--bg),black 20%)); color:var(--text); line-height:1.6; min-height:100vh; display:flex; flex-direction:column; }
-    header { background:var(--header-bg); backdrop-filter:blur(10px); box-shadow:0 2px 10px rgba(0,0,0,.1); padding:1rem 0; position:sticky; top:0; z-index:100; }
-    .container { max-width:1200px; margin:auto; padding:0 1rem; }
-    .header-content { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
-    .logo { font-size:1.8rem; font-weight:700; color:var(--primary); text-decoration:none; display:flex; align-items:center; gap:.5rem; }
-    .logo i { font-size:2rem; }
-    .user-menu { display:flex; gap:1rem; align-items:center; font-weight:500; }
-    .user-menu a, .user-menu button { background:none; border:none; color:var(--text); cursor:pointer; text-decoration:none; }
-    .user-menu .username { color:var(--primary); font-weight:600; }
-    .user-menu .logout { color:var(--danger); }
-    .user-menu .logout:hover { text-decoration:underline; }
-    .btn-outline { background:transparent; color:var(--primary); border:2px solid var(--primary); padding:0.5rem 1rem; border-radius:12px; font-size:0.9rem; font-weight:600; }
-    .btn-outline:hover { background:var(--primary); color:white; }
-    .theme-toggle { background:var(--card-bg); border:2px solid var(--border); border-radius:50px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1rem; color:var(--text); box-shadow:0 4px 15px rgba(0,0,0,.1); transition:all .3s; }
-    .theme-toggle:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.15); border-color:var(--primary); }
-    main { flex:1; padding:3rem 0; }
-    .hero { text-align:center; padding:4rem 0; background:var(--card-bg); border-radius:12px; margin-bottom:3rem; box-shadow:0 6px 20px rgba(0,0,0,.1); }
-    .hero h1 { font-size:3rem; margin-bottom:1rem; background:linear-gradient(90deg,var(--primary),color-mix(in srgb,var(--primary),white 30%)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .hero p { font-size:1.2rem; color:var(--secondary); max-width:700px; margin:auto auto 2rem; }
-    .search-box { display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
-    .input-group { flex:1; min-width:300px; position:relative; }
-    .input-group input { width:100%; padding:1rem 1rem 1rem 3rem; border:2px solid var(--border); border-radius:12px; font-size:1rem; background:var(--card-bg); color:var(--text); transition:all .3s; }
-    .input-group input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px color-mix(in srgb,var(--primary),transparent 80%); }
-    .input-group i { position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:var(--secondary); }
-    .btn-primary { background:var(--primary); color:white; padding:1rem 2rem; border:none; border-radius:12px; font-weight:600; cursor:pointer; transition:all .3s; display:inline-flex; align-items:center; gap:.5rem; }
-    .btn-primary:hover { background:color-mix(in srgb,var(--primary),black 20%); transform:translateY(-2px); box-shadow:0 8px 25px color-mix(in srgb,var(--primary),transparent 70%); }
-    footer { background:var(--footer-bg); color:var(--footer-text); padding:2rem 0; text-align:center; font-size:.9rem; }
+    :root {
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --primary-dark: #4f46e5;
+      --danger: #ef4444;
+      --success: #10b981;
+      --bg: #f8fafc;
+      --card: rgba(255, 255, 255, 0.85);
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: rgba(226, 232, 240, 0.8);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      --radius: 16px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card: rgba(30, 41, 59, 0.7);
+      --text: #f1f5f9;
+      --text-light: #94a3b8;
+      --border: rgba(51, 65, 85, 0.8);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Glass Header */
+    header {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.7);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      transition: var(--transition);
+    }
+    [data-theme="dark"] header {
+      background: rgba(15, 23, 42, 0.7);
+      border-bottom: 1px solid rgba(51, 65, 85, 0.8);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 70px;
+    }
+
+    /* Logo */
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+    }
+    .logo i {
+      font-size: 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .logo:hover {
+      transform: translateY(-1px);
+    }
+
+    /* User Menu */
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-weight: 500;
+    }
+    .user-menu a, .user-menu button {
+      color: var(--text);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+    .user-menu a:hover, .user-menu button:hover {
+      background: rgba(99, 102, 241, 0.1);
+    }
+    .username {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .logout {
+      color: var(--danger) !important;
+    }
+
+    .btn-dashboard {
+      background: var(--primary);
+      color: white !important;
+      padding: 0.5rem 1rem !important;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: var(--transition);
+    }
+    .btn-dashboard:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--text-light);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Main Hero */
+    main { flex: 1; padding: 4rem 0; }
+    .hero {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-light);
+      max-width: 600px;
+      margin: 0 auto 2.5rem;
+    }
+
+    /* Search Box */
+    .search-box {
+      display: flex;
+      gap: 1rem;
+      max-width: 700px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .input-group {
+      flex: 1;
+      min-width: 280px;
+      position: relative;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 1rem 1rem 1rem 3.2rem;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      color: var(--text);
+      font-size: 1rem;
+      transition: var(--transition);
+      backdrop-filter: blur(8px);
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+    }
+    .input-group i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 1.1rem;
+    }
+
+    .btn-scan {
+      background: var(--primary);
+      color: white;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    }
+    .btn-scan:hover {
+      background: var(--primary-dark);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--card);
+      color: var(--text-light);
+      text-align: center;
+      padding: 2rem 0;
+      font-size: 0.9rem;
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--border);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.5rem; }
+      .search-box { flex-direction: column; }
+      .header-content { height: auto; padding: 1rem 0; flex-wrap: wrap; }
+      .user-menu { order: 3; width: 100%; justify-content: center; margin-top: 1rem; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Header -->
   <header>
     <div class="container">
       <div class="header-content">
-        <!-- LOGO: Click → Home (index.html) -->
-        <a href="/" class="logo"><i class="fas fa-shield-alt"></i>CapTcha</a>
+        <!-- Logo → Home -->
+        <a href="/" class="logo">
+          <i class="fas fa-shield-alt"></i> CapTcha
+        </a>
 
-        <!-- RIGHT SIDE: User Menu + Theme -->
-        <div style="display:flex; gap:1rem; align-items:center;">
+        <!-- Right: User Menu + Theme -->
+        <div style="display: flex; align-items: center; gap: 1rem;">
           <div class="user-menu" id="userMenu">
             <a href="login.html">Login</a>
             <a href="register.html">Register</a>
           </div>
-          <div class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></div>
+          <div class="theme-toggle" id="themeToggle">
+            <i class="fas fa-moon"></i>
+          </div>
         </div>
       </div>
     </div>
   </header>
 
+  <!-- Main -->
   <main>
-    <div class="container">
-      <section class="hero">
-        <h1>CapTcha Tool</h1>
-        <p>Quickly detect and analyze CAPTCHA implementations across websites.</p>
-        <div class="search-box">
-          <div class="input-group">
-            <i class="fas fa-globe"></i>
-            <input type="url" id="urlInput" placeholder="https://example.com" required>
-          </div>
-          <button class="btn-primary" id="scanBtn"><i class="fas fa-search"></i> Scan</button>
+    <div class="hero">
+      <h1>CapTcha Tool</h1>
+      <p>Instantly detect hCaptcha, reCAPTCHA, Cloudflare Turnstile, and more — with AI-powered accuracy.</p>
+
+      <div class="search-box">
+        <div class="input-group">
+          <i class="fas fa-globe"></i>
+          <input type="url" id="urlInput" placeholder="https://example.com" required />
         </div>
-      </section>
+        <button class="btn-scan" id="scanBtn">
+          <i class="fas fa-search"></i> Scan Now
+        </button>
+      </div>
     </div>
   </main>
 
-  <footer>© 2025 CapTcha Tool</footer>
+  <!-- Footer -->
+  <footer>
+    © 2025 <strong>CapTcha Tool</strong> • Built by capovh
+  </footer>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 
   <script>
-    // === Firebase Config ===
+    // === Your Firebase Config ===
     const firebaseConfig = {
       apiKey: "AIzaSyA9sJoZSzbmKJ-7F9jsYVmf7m4cMJ_JUuA",
       authDomain: "captcha-finder.firebaseapp.com",
@@ -96,28 +331,25 @@
     const toggle = document.getElementById('themeToggle');
     const body = document.body;
     const icon = toggle.querySelector('i');
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    body.dataset.theme = savedTheme;
-    icon.classList.toggle('fa-sun', savedTheme === 'dark');
-    icon.classList.toggle('fa-moon', savedTheme === 'light');
+    const saved = localStorage.getItem('theme') || 'light';
+    body.dataset.theme = saved;
+    icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 
     toggle.onclick = () => {
       const isDark = body.dataset.theme === 'dark';
       const next = isDark ? 'light' : 'dark';
       body.dataset.theme = next;
       localStorage.setItem('theme', next);
-      icon.classList.toggle('fa-sun', !isDark);
-      icon.classList.toggle('fa-moon', isDark);
+      icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
     };
 
-    // === User Menu + Dashboard Button ===
+    // === User Menu + Dashboard ===
     const userMenu = document.getElementById('userMenu');
-
-    function updateUserMenu(user) {
+    function renderUser(user) {
       if (user) {
         const name = user.email.split('@')[0];
         userMenu.innerHTML = `
-          <a href="dashboard.html" class="btn-outline">
+          <a href="dashboard.html" class="btn-dashboard">
             <i class="fas fa-tachometer-alt"></i> Dashboard
           </a>
           <span class="username">${name}</span>
@@ -130,23 +362,30 @@
         `;
       }
     }
+    window.logout = () => firebase.auth().signOut().then(() => location.reload());
 
-    window.logout = () => {
-      firebase.auth().signOut().then(() => location.reload());
-    };
-
-    // === Auth State Listener ===
     firebase.auth().onAuthStateChanged(user => {
-      updateUserMenu(user);
+      renderUser(user);
       localStorage.setItem('user', user ? JSON.stringify(user) : '');
     });
 
-    // === Scan Button (Demo) ===
+    // === Scan Button ===
     document.getElementById('scanBtn').onclick = () => {
       const url = document.getElementById('urlInput').value.trim();
-      if (!url) return alert('Please enter a URL');
-      if (!/^https?:\/\//i.test(url)) return alert('Enter a valid URL starting with http:// or https://');
-      alert(`Scanning: ${url}\n(Backend not connected yet)`);
+      if (!url) return alert('Please enter a website URL');
+      if (!/^https?:\/\//i.test(url)) return alert('URL must start with http:// or https://');
+      
+      // Simulate scan
+      const btn = document.getElementById('scanBtn');
+      const original = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scanning...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.disabled = false;
+        alert(`Scan Complete!\n\nTarget: ${url}\nStatus: reCAPTCHA v2 + hCaptcha detected\nConfidence: 98%`);
+      }, 2200);
     };
   </script>
 </body>
