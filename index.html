@@ -133,6 +133,23 @@
   </footer>
 
   <script>
+    // Firebase Auth State
+firebase.auth().onAuthStateChanged(user => {
+  const userMenu = document.getElementById('userMenu');
+  if (user) {
+    const displayName = user.email.split('@')[0];
+    userMenu.innerHTML = `<span class="username">${displayName}</span> <button class="logout" onclick="logout()">Logout</button>`;
+    localStorage.setItem('user', JSON.stringify(user));
+  } else {
+    userMenu.innerHTML = `<a href="login.html">Login</a> <a href="register.html">Register</a>`;
+    localStorage.removeItem('user');
+    if (location.pathname.includes('dashboard.html')) location.href = '/login.html';
+  }
+});
+
+window.logout = () => {
+  firebase.auth().signOut().then(() => location.reload());
+};
     // Theme toggle
     const toggle = document.getElementById('themeToggle'), body = document.body, icon = toggle.querySelector('i');
     const theme = localStorage.getItem('theme') || 'light'; body.dataset.theme = theme;
