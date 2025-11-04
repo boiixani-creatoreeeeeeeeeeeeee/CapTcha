@@ -9,115 +9,143 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <style>
+    .skeleton { @apply bg-gray-700 animate-pulse rounded; }
+    .skeleton-text { @apply h-4 w-32; }
+    .skeleton-bar { @apply h-8 w-full; }
+  </style>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen">
 
-<!-- LOADING -->
-<div x-show="loading" class="flex items-center justify-center min-h-screen">
-  <div class="text-xl">Checking admin access...</div>
-</div>
-
-<!-- NOT ADMIN -->
-<div x-show="!isAdmin && !loading" class="flex items-center justify-center min-h-screen">
-  <div class="text-center">
-    <h1 class="text-2xl font-bold mb-4">Admin Access Required</h1>
+<!-- NOT LOGGED IN -->
+<div x-show="!isAdmin && !loading" class="flex items-center justify-center min-h-screen p-6">
+  <div class="text-center max-w-md">
+    <h1 class="text-3xl font-bold mb-4">Admin Access Required</h1>
+    <p class="text-gray-400 mb-6">Login with Discord to manage keys and stats.</p>
     <button @click="loginWithDiscord()" 
-            class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+            class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-xl transition transform hover:scale-105">
       Login with Discord
     </button>
   </div>
 </div>
 
 <!-- ADMIN DASHBOARD -->
-<template x-if="isAdmin && !loading">
+<template x-if="isAdmin">
   <div>
     <!-- Navbar -->
-    <header class="bg-gray-800 border-b border-gray-700 p-4">
-      <div class="flex items-center justify-between">
+    <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-10">
+      <div class="flex items-center justify-between max-w-7xl mx-auto">
         <h1 class="text-2xl font-bold">Admin Dashboard</h1>
         <div class="flex items-center space-x-4">
-          <span class="text-sm">Welcome, <strong x-text="user.username"></strong></span>
-          <button @click="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Logout</button>
+          <span class="text-sm hidden sm:block">Welcome, <strong x-text="user.username"></strong></span>
+          <button @click="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Logout</button>
         </div>
       </div>
     </header>
 
     <!-- Tabs -->
-    <div class="flex border-b border-gray-700">
-      <button @click="activeTab='keys'" 
+    <div class="flex border-b border-gray-700 sticky top-16 bg-gray-800 z-10">
+      <button @click="activeTab='keys'; loadData()" 
               :class="activeTab==='keys' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-gray-400'"
-              class="px-6 py-3">Keys</button>
-      <button @click="activeTab='stats'" 
+              class="px-6 py-3 font-medium transition">Keys</button>
+      <button @click="activeTab='stats'; loadData()" 
               :class="activeTab==='stats' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-gray-400'"
-              class="px-6 py-3">Stats</button>
+              class="px-6 py-3 font-medium transition">Stats</button>
     </div>
 
-    <!-- KEYS TAB -->
-    <div x-show="activeTab === 'keys'" class="p-6 space-y-6">
-      <!-- Summary Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 rounded-xl text-white">
-          <p class="text-sm opacity-90">Total Keys</p>
-          <p class="text-3xl font-bold" x-text="stats.total"></p>
+    <!-- CONTENT -->
+    <div class="p-6 max-w-7xl mx-auto">
+
+      <!-- LOADING STATE -->
+      <div x-show="loading" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="skeleton h-24 rounded-xl"></div>
+          <div class="skeleton h-24 rounded-xl"></div>
+          <div class="skeleton h-24 rounded-xl"></div>
         </div>
-        <div class="bg-gradient-to-r from-green-600 to-teal-600 p-5 rounded-xl text-white">
-          <p class="text-sm opacity-90">Active</p>
-          <p class="text-3xl font-bold" x-text="stats.active"></p>
-        </div>
-        <div class="bg-gradient-to-r from-red-600 to-pink-600 p-5 rounded-xl text-white">
-          <p class="text-sm opacity-90">Expired</p>
-          <p class="text-3xl font-bold" x-text="stats.expired"></p>
+        <div class="bg-gray-800 rounded-lg p-6">
+          <div class="skeleton h-8 w-48 mb-4"></div>
+          <div class="space-y-3">
+            <div class="skeleton h-10 w-full"></div>
+            <div class="skeleton h-10 w-full"></div>
+            <div class="skeleton h-10 w-full"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Keys Table -->
-      <div class="bg-gray-800 rounded-lg overflow-hidden">
-        <table class="w-full text-sm">
-          <thead class="bg-gray-700">
-            <tr>
-              <th class="p-3 text-left">Macho-Auth Key</th>
-              <th class="p-3 text-left">Redeemed By</th>
-              <th class="p-3 text-left">Expires</th>
-              <th class="p-3 text-left">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template x-for="key in keys" :key="key.code">
-              <tr class="border-b border-gray-700 hover:bg-gray-700/50 transition">
-                <td class="p-3 font-mono text-xs text-indigo-300" x-text="key.code"></td>
-                <td class="p-3" x-text="key.claimedBy"></td>
-                <td class="p-3" x-text="formatDate(key.expires)"></td>
-                <td class="p-3">
-                  <span :class="key.status === 'active' 
-                    ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
-                    : 'bg-red-500/20 text-red-300 border border-red-500/30'"
-                        class="px-3 py-1 rounded-full text-xs font-medium">
-                    <span x-text="key.status.toUpperCase()"></span>
-                  </span>
-                </td>
-              </tr>
-            </template>
-            <tr x-show="keys.length === 0" class="text-center text-gray-500 py-8">
-              <td colspan="4">No keys found. Check your keys.txt URL.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <!-- KEYS TAB -->
+      <div x-show="activeTab === 'keys' && !loading" class="space-y-6">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 rounded-xl text-white shadow-lg">
+            <p class="text-sm opacity-90">Total Keys</p>
+            <p class="text-3xl font-bold" x-text="stats.total"></p>
+          </div>
+          <div class="bg-gradient-to-r from-green-600 to-teal-600 p-5 rounded-xl text-white shadow-lg">
+            <p class="text-sm opacity-90">Active</p>
+            <p class="text-3xl font-bold" x-text="stats.active"></p>
+          </div>
+          <div class="bg-gradient-to-r from-red-600 to-pink-600 p-5 rounded-xl text-white shadow-lg">
+            <p class="text-sm opacity-90">Expired</p>
+            <p class="text-3xl font-bold" x-text="stats.expired"></p>
+          </div>
+        </div>
 
-    <!-- STATS TAB -->
-    <div x-show="activeTab === 'stats'" class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-gray-800 p-6 rounded-lg">
-        <h3 class="text-lg font-semibold text-gray-400">Total Keys</h3>
-        <p class="text-3xl font-bold mt-2" x-text="stats.total"></p>
+        <!-- Keys Table -->
+        <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg">
+          <div class="p-4 border-b border-gray-700">
+            <input x-model="search" type="text" placeholder="Search keys or users..." 
+                   class="w-full sm:w-64 px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-700">
+                <tr>
+                  <th class="p-3 text-left">Macho-Auth Key</th>
+                  <th class="p-3 text-left">Redeemed By</th>
+                  <th class="p-3 text-left">Expires</th>
+                  <th class="p-3 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="key in filteredKeys" :key="key.code">
+                  <tr class="border-b border-gray-700 hover:bg-gray-700/50 transition">
+                    <td class="p-3 font-mono text-xs text-indigo-300" x-text="key.code"></td>
+                    <td class="p-3" x-text="key.claimedBy"></td>
+                    <td class="p-3" x-text="formatDate(key.expires)"></td>
+                    <td class="p-3">
+                      <span :class="key.status === 'active' 
+                        ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
+                        : 'bg-red-500/20 text-red-300 border border-red-500/30'"
+                            class="px-3 py-1 rounded-full text-xs font-medium">
+                        <span x-text="key.status.toUpperCase()"></span>
+                      </span>
+                    </td>
+                  </tr>
+                </template>
+                <tr x-show="filteredKeys.length === 0">
+                  <td colspan="4" class="text-center py-8 text-gray-500">No keys found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div class="bg-gray-800 p-6 rounded-lg">
-        <h3 class="text-lg font-semibold text-gray-400">Active Keys</h3>
-        <p class="text-3xl font-bold mt-2 text-green-400" x-text="stats.active"></p>
-      </div>
-      <div class="bg-gray-800 p-6 rounded-lg">
-        <h3 class="text-lg font-semibold text-gray-400">Total Injections</h3>
-        <p class="text-3xl font-bold mt-2 text-blue-400" x-text="injections.length"></p>
+
+      <!-- STATS TAB -->
+      <div x-show="activeTab === 'stats' && !loading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h3 class="text-lg font-semibold text-gray-400">Total Keys</h3>
+          <p class="text-4xl font-bold mt-2" x-text="stats.total"></p>
+        </div>
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h3 class="text-lg font-semibold text-gray-400">Active Keys</h3>
+          <p class="text-4xl font-bold mt-2 text-green-400" x-text="stats.active"></p>
+        </div>
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h3 class="text-lg font-semibold text-gray-400">Total Injections</h3>
+          <p class="text-4xl font-bold mt-2 text-blue-400" x-text="injections.length"></p>
+        </div>
       </div>
     </div>
   </div>
@@ -128,9 +156,9 @@
 const DISCORD_CLIENT_ID = '963238863256567848';
 const REDIRECT_URI = 'https://capovh.github.io/CapTcha/admin.html';
 const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/72395839745598327589k/dsadasdasd324e3242/refs/heads/main/keys.txt';
-const ADMIN_DISCORD_IDS = ['1393017932610666577', '805954114231205978']; // Your admin IDs
+const ADMIN_DISCORD_IDS = ['1393017932610666577', '805954114231205978'];
 
-// Firebase Config
+// Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyA9sJoZSzbmKJ-7F9jsYVmf7m4cMJ_JUuA",
   authDomain: "captcha-finder.firebaseapp.com",
@@ -144,28 +172,31 @@ const db = firebase.database();
 
 function admin() {
   return {
-    loading: true,
+    loading: false,
     isAdmin: false,
     user: null,
     keys: [],
     injections: [],
     activeTab: 'keys',
     stats: { total: 0, active: 0, expired: 0 },
+    search: '',
+    refreshInterval: null,
 
     async init() {
+      this.loading = true;
+      const saved = localStorage.getItem('discord_user');
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
+
       if (code) {
         await this.exchangeCode(code);
         window.history.replaceState({}, document.title, window.location.pathname);
-      } else {
-        const saved = localStorage.getItem('discord_user');
-        if (saved) {
-          this.user = JSON.parse(saved);
-          if (ADMIN_DISCORD_IDS.includes(this.user.id)) {
-            this.isAdmin = true;
-            await this.loadData();
-          }
+      } else if (saved) {
+        this.user = JSON.parse(saved);
+        if (ADMIN_DISCORD_IDS.includes(this.user.id)) {
+          this.isAdmin = true;
+          await this.loadData();
+          this.startAutoRefresh();
         }
       }
       this.loading = false;
@@ -173,111 +204,113 @@ function admin() {
 
     async exchangeCode(code) {
       try {
-        const tokenResponse = await fetch(`https://discord.com/api/oauth2/token`, {
+        const res = await fetch('https://discord.com/api/oauth2/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams({
             client_id: DISCORD_CLIENT_ID,
             client_secret: 'e-AcJZ15inxDOh7tovbhxEqYywfHb4bq',
             grant_type: 'authorization_code',
-            code: code,
-            redirect_uri: REDIRECT_URI,
-            scope: 'identify guilds'
+            code,
+            redirect_uri: REDIRECT_URI
           })
         });
-        const tokenData = await tokenResponse.json();
-        if (!tokenData.access_token) throw new Error('Invalid Discord token');
+        const data = await res.json();
+        if (!data.access_token) throw new Error('Login failed');
 
-        const userResponse = await fetch('https://discord.com/api/users/@me', {
-          headers: { Authorization: `Bearer ${tokenData.access_token}` }
+        const userRes = await fetch('https://discord.com/api/users/@me', {
+          headers: { Authorization: `Bearer ${data.access_token}` }
         });
-        const user = await userResponse.json();
+        const user = await userRes.json();
         localStorage.setItem('discord_user', JSON.stringify(user));
 
         if (ADMIN_DISCORD_IDS.includes(user.id)) {
           this.user = user;
           this.isAdmin = true;
           await this.loadData();
+          this.startAutoRefresh();
         } else {
-          alert('Access denied. Admins only.');
+          alert('Not an admin.');
           this.logout();
         }
-      } catch (err) {
-        console.error(err);
-        alert('Login failed: ' + err.message);
+      } catch (e) {
+        console.error(e);
+        alert('Login error: ' + e.message);
       }
     },
 
     async loadData() {
+      this.loading = true;
       try {
-        // === Load keys from GitHub ===
-        const res = await fetch(GITHUB_RAW_URL);
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        // Parallel fetch
+        const [keysRes, injSnap] = await Promise.all([
+          fetch(GITHUB_RAW_URL),
+          db.ref('injections').once('value')
+        ]);
 
-        const text = await res.text();
-        if (!text || typeof text !== 'string') throw new Error('Empty response from keys.txt');
+        if (!keysRes.ok) throw new Error('keys.txt not found');
 
-        const lines = text.trim().split('\n').map(l => l.trim()).filter(l => l);
-        if (lines.length === 0) throw new Error('keys.txt is empty');
+        const text = await keysRes.text();
+        const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
 
-        const githubKeys = lines.map(line => {
-          const parts = line.split(',');
-          if (parts.length < 4) return null; // Skip malformed
-          const [code, redeemedBy, discordId, expires] = parts;
-          const expiryDate = new Date(expires);
-          const isExpired = expiryDate < new Date();
+        const keys = lines.map(line => {
+          const [code, name, id, expires] = line.split(',');
+          const date = new Date(expires);
           return {
-            code: code.trim(),
-            claimedBy: redeemedBy?.trim() || '—',
-            expires: expires.trim(),
-            status: isExpired ? 'expired' : 'active'
+            code: code?.trim(),
+            claimedBy: name?.trim() || '—',
+            expires: expires?.trim(),
+            status: date < new Date() ? 'expired' : 'active'
           };
         }).filter(Boolean);
 
-        // === Load claimed keys from Firebase ===
-        const snap = await db.ref('keys').once('value');
-        const claimed = snap.val() || {};
-
-        this.keys = githubKeys.map(k => ({
-          ...k,
-          claimedBy: k.claimedBy !== '—' ? k.claimedBy : (claimed[k.code]?.claimedBy || '—')
-        }));
-
-        // === Load injections ===
-        const injSnap = await db.ref('injections').once('value');
+        this.keys = keys;
         this.injections = Object.values(injSnap.val() || {});
 
-        // === Update stats ===
-        this.stats.total = this.keys.length;
-        this.stats.active = this.keys.filter(k => k.status === 'active').length;
+        this.stats.total = keys.length;
+        this.stats.active = keys.filter(k => k.status === 'active').length;
         this.stats.expired = this.stats.total - this.stats.active;
 
-      } catch (err) {
-        console.error('Load error:', err);
-        alert('Failed to load data: ' + err.message);
+      } catch (e) {
+        console.error(e);
         this.keys = [];
         this.stats = { total: 0, active: 0, expired: 0 };
       }
+      this.loading = false;
+    },
+
+    get filteredKeys() {
+      if (!this.search) return this.keys;
+      const s = this.search.toLowerCase();
+      return this.keys.filter(k => 
+        k.code.includes(s) || 
+        k.claimedBy.toLowerCase().includes(s)
+      );
+    },
+
+    startAutoRefresh() {
+      if (this.refreshInterval) clearInterval(this.refreshInterval);
+      this.refreshInterval = setInterval(() => this.loadData(), 30000);
     },
 
     loginWithDiscord() {
-      const authUrl = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
-      window.location = authUrl;
+      const url = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
+      window.location = url;
     },
 
     logout() {
       localStorage.removeItem('discord_user');
+      if (this.refreshInterval) clearInterval(this.refreshInterval);
       this.isAdmin = false;
       this.user = null;
       this.keys = [];
-      this.stats = { total: 0, active: 0, expired: 0 };
     },
 
     formatDate(date) {
       try {
-        return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       } catch {
-        return 'Invalid Date';
+        return '—';
       }
     }
   };
