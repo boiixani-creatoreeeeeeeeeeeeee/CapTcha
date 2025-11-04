@@ -1,0 +1,19 @@
+/* ---- Dark-mode toggle (Bootstrap 5) ---- */
+[data-bs-theme="dark"] {
+  --bs-body-bg: #212529;
+  --bs-body-color: #f8f9fa;
+}
+
+/* ---- Pricing badge ---- */
+.badge-pricing {
+  top: -12px;
+  right: -12px;
+}
+
+/* ---- Navbar shadow on scroll ---- */
+.navbar-shadow-on-scroll {
+  transition: box-shadow .3s;
+}
+.navbar-shadow-on-scroll.scrolled {
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
