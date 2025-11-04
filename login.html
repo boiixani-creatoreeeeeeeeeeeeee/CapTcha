@@ -3,126 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <base href="/CapTcha/"> <!-- FIXED -->
   <title>Login • CapTcha</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --primary: #6366f1; --primary-dark: #4f46e5; --danger: #ef4444; --success: #10b981;
+    /* Same CSS as before */
+    :root { --primary: #6366f1; --primary-dark: #4f46e5; --danger: #ef4444; --success: #10b981;
       --bg: #f8fafc; --card: rgba(255, 255, 255, 0.9); --text: #1e293b; --text-light: #64748b;
       --border: rgba(226, 232, 240, 0.8); --shadow: 0 12px 30px rgba(0, 0, 0, 0.1); --radius: 16px;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    [data-theme="dark"] {
-      --bg: #0f172a; --card: rgba(30, 41, 59, 0.8); --text: #f1f5f9; --text-light: #94a3b8;
-      --border: rgba(51, 65, 85, 0.8); --shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-    }
-
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    [data-theme="dark"] { --bg: #0f172a; --card: rgba(30, 41, 59, 0.8); --text: #f1f5f9; --text-light: #94a3b8;
+      --border: rgba(51, 65, 85, 0.8); --shadow: 0 12px 30px rgba(0, 0, 0, 0.4); }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
-      min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;
-    }
-
-    header {
-      backdrop-filter: blur(16px); background: rgba(255, 255, 255, 0.7); border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 1000;
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    header { backdrop-filter: blur(16px); background: rgba(255, 255, 255, 0.7); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
     [data-theme="dark"] header { background: rgba(15, 23, 42, 0.7); }
-
     .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
     .header-content { display: flex; justify-content: space-between; align-items: center; height: 70px; }
-
-    .logo {
-      font-size: 1.8rem; font-weight: 700; color: var(--primary); text-decoration: none;
-      display: flex; align-items: center; gap: 0.5rem; transition: var(--transition);
-    }
-    .logo i { font-size: 2rem; background: linear-gradient(135deg, var(--primary), #818cf8);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: var(--transition); }
+    .logo i { font-size: 2rem; background: linear-gradient(135deg, var(--primary), #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .logo:hover { transform: translateY(-1px); }
-
     .user-menu { display: flex; align-items: center; gap: 1rem; font-weight: 500; }
-    .user-menu a, .user-menu button {
-      color: var(--text); text-decoration: none; padding: 0.5rem 1rem; border-radius: 12px;
-      transition: var(--transition); font-size: 0.95rem;
-    }
+    .user-menu a, .user-menu button { color: var(--text); text-decoration: none; padding: 0.5rem 1rem; border-radius: 12px; transition: var(--transition); font-size: 0.95rem; }
     .user-menu a:hover, .user-menu button:hover { background: rgba(99, 102, 241, 0.1); }
     .username { color: var(--primary); font-weight: 600; }
     .logout { color: var(--danger) !important; }
-
-    .btn-dashboard {
-      background: var(--primary); color: white !important; padding: 0.5rem 1rem !important;
-      border-radius: 12px; font-size: 0.9rem; font-weight: 600; display: inline-flex;
-      align-items: center; gap: 0.4rem; transition: var(--transition);
-    }
+    .btn-dashboard { background: var(--primary); color: white !important; padding: 0.5rem 1rem !important; border-radius: 12px; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: var(--transition); }
     .btn-dashboard:hover { background: var(--primary-dark); transform: translateY(-2px); }
-
-    .theme-toggle {
-      background: var(--card); border: 2px solid var(--border); border-radius: 50%;
-      width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: var(--transition); color: var(--text-light);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
+    .theme-toggle { background: var(--card); border: 2px solid var(--border); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); color: var(--text-light); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
     .theme-toggle:hover { transform: translateY(-2px); border-color: var(--primary); }
-
     main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
-    .auth-card {
-      background: var(--card); backdrop-filter: blur(12px); border-radius: var(--radius);
-      padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-    }
-    .auth-card h2 {
-      font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem;
-      background: linear-gradient(90deg, var(--primary), #818cf8);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-
-    .input-group {
-      position: relative; margin-bottom: 1.2rem;
-    }
-    .input-group input {
-      width: 100%; padding: 1rem 1rem 1rem 3rem; border: 2px solid var(--border);
-      border-radius: 12px; background: rgba(255, 255, 255, 0.7); color: var(--text);
-      font-size: 1rem; transition: var(--transition);
-    }
+    .auth-card { background: var(--card); backdrop-filter: blur(12px); border-radius: var(--radius); padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .auth-card h2 { font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem; background: linear-gradient(90deg, var(--primary), #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .input-group { position: relative; margin-bottom: 1.2rem; }
+    .input-group input { width: 100%; padding: 1rem 1rem 1rem 3rem; border: 2px solid var(--border); border-radius: 12px; background: rgba(255, 255, 255, 0.7); color: var(--text); font-size: 1rem; transition: var(--transition); }
     [data-theme="dark"] .input-group input { background: rgba(51, 65, 85, 0.5); }
-    .input-group input:focus {
-      outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
-    }
-    .input-group i {
-      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
-      color: var(--text-light); font-size: 1.1rem;
-    }
-
-    .btn-login {
-      width: 100%; padding: 1rem; background: var(--primary); color: white;
-      border: none; border-radius: 12px; font-weight: 600; cursor: pointer;
-      font-size: 1rem; transition: var(--transition); margin-top: 0.5rem;
-      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
-    }
+    .input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2); }
+    .input-group i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 1.1rem; }
+    .btn-login { width: 100%; padding: 1rem; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: var(--transition); margin-top: 0.5rem; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3); }
     .btn-login:hover { background: var(--primary-dark); transform: translateY(-2px); }
-
-    .msg {
-      margin-top: 1rem; text-align: center; font-size: 0.9rem; min-height: 1.5rem;
-    }
+    .msg { margin-top: 1rem; text-align: center; font-size: 0.9rem; min-height: 1.5rem; }
     .msg.error { color: var(--danger); }
     .msg.success { color: var(--success); }
-
-    .link {
-      text-align: center; margin-top: 1.5rem; font-size: 0.95rem;
-    }
+    .link { text-align: center; margin-top: 1.5rem; font-size: 0.95rem; }
     .link a { color: var(--primary); text-decoration: none; font-weight: 500; }
     .link a:hover { text-decoration: underline; }
-
     footer { background: var(--card); color: var(--text-light); text-align: center; padding: 1.5rem 0; font-size: 0.85rem; }
-
-    @media (max-width: 480px) {
-      .auth-card { padding: 2rem; }
-    }
   </style>
 </head>
 <body>
-
   <header>
     <div class="container">
       <div class="header-content">
@@ -136,24 +66,22 @@
   </header>
 
   <main>
-    < Slaughter
-      <div class="auth-card">
-        <h2>Login</h2>
-        <form id="loginForm">
-          <div class="input-group">
-            <i class="fas fa-envelope"></i>
-            <input type="email" id="email" placeholder="Email" required />
-          </div>
-          <div class="input-group">
-            <i class="fas fa-lock"></i>
-            <input type="password" id="password" placeholder="Password" required />
-          </div>
-          <button type="submit" class="btn-login">Login</button>
-        </form>
-        <p class="msg" id="msg"></p>
-        <div class="link">
-          Don't have an account? <a href="register.html">Register here</a>
+    <div class="auth-card">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <div class="input-group">
+          <i class="fas fa-envelope"></i>
+          <input type="email" id="email" placeholder="Email" required />
         </div>
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="password" placeholder="Password" required />
+        </div>
+        <button type="submit" class="btn-login">Login</button>
+      </form>
+      <p class="msg" id="msg"></p>
+      <div class="link">
+        Don't have an account? <a href="register.html">Register here</a>
       </div>
     </div>
   </main>
@@ -163,7 +91,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script>
-    // === YOUR FIREBASE CONFIG ===
     const firebaseConfig = {
       apiKey: "AIzaSyA9sJoZSzbmKJ-7F9jsYVmf7m4cMJ_JUuA",
       authDomain: "captcha-finder.firebaseapp.com",
@@ -175,7 +102,6 @@
     };
     firebase.initializeApp(firebaseConfig);
 
-    // === Theme Toggle ===
     const toggle = document.getElementById('themeToggle');
     const body = document.body;
     const icon = toggle.querySelector('i');
@@ -187,10 +113,10 @@
       const next = isDark ? 'light' : 'dark';
       body.dataset.theme = next;
       localStorage.setItem('theme', next);
+      priority: high
       icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
     };
 
-    // === User Menu ===
     const userMenu = document.getElementById('userMenu');
     function renderUser(user) {
       if (user) {
@@ -207,43 +133,34 @@
     window.logout = () => firebase.auth().signOut().then(() => location.reload());
     firebase.auth().onAuthStateChanged(user => {
       renderUser(user);
-      if (user && (location.pathname.includes('login.html') || location.pathname.includes('register.html'))) {
+      if (user && location.pathname.includes('login.html')) {
         location.href = '/CapTcha/';
       }
     });
 
-    // === Login Form ===
     document.getElementById('loginForm').onsubmit = e => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const msg = document.getElementById('msg');
       msg.textContent = '';
-      msg.className = 'msg';
-
       if (!email || !password) {
         msg.className = 'msg error';
-        msg.textContent = 'Please fill in all fields.';
+        msg.textContent = 'Fill in all fields.';
         return;
       }
-
       const btn = e.target.querySelector('.btn-login');
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-
       firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(() => location.href = '/')
+        .then(() => location.href = '/CapTcha/')  // FIXED
         .catch(err => {
           btn.disabled = false;
           btn.innerHTML = 'Login';
           msg.className = 'msg error';
-          if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-            msg.textContent = 'Invalid email or password.';
-          } else if (err.code === 'auth/invalid-email') {
-            msg.textContent = 'Invalid email address.';
-          } else {
-            msg.textContent = err.message;
-          }
+          msg.textContent = err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password'
+            ? 'Invalid email or password.'
+            : err.message;
         });
     };
   </script>
