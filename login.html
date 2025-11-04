@@ -60,7 +60,7 @@
     document.getElementById('loginForm').onsubmit = async e => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('login.html', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify(Object.fromEntries(fd))
