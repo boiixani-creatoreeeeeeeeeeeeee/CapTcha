@@ -75,22 +75,10 @@
     <div class="hidden md:flex items-center space-x-6">
       <a href="#features" class="hover:text-indigo-400 transition">Features</a>
       <a href="#pricing" class="hover:text-indigo-400 transition">Pricing</a>
-
-      <!-- NOT LOGGED IN: Show Login -->
-      <template x-if="!user.id">
-        <a href="login.html" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">Login</a>
-      </template>
-
-      <!-- LOGGED IN: Show Dashboard + Avatar ONLY -->
+      <a href="login.html" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">Login</a>
       <template x-if="user.id">
-        <div class="flex items-center space-x-3">
-          <a href="dashboard.html" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition text-sm font-medium">Dashboard</a>
-          <a href="dashboard.html">
-            <img :src="user.avatar" alt="Profile" class="avatar ring-2 ring-indigo-500">
-          </a>
-        </div>
+        <a href="dashboard.html" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition text-sm font-medium">Dashboard</a>
       </template>
-
       <button @click="dark = !dark" class="ml-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
         <i x-show="!dark" class="fas fa-moon text-lg"></i>
         <i x-show="dark" class="fas fa-sun text-lg text-yellow-400"></i>
@@ -110,20 +98,10 @@
     <div class="container mx-auto px-4 py-4 space-y-3">
       <a href="#features" class="block">Features</a>
       <a href="#pricing" class="block">Pricing</a>
-
-      <!-- NOT LOGGED IN -->
-      <template x-if="!user.id">
-        <a href="login.html" class="block">Login</a>
-      </template>
-
-      <!-- LOGGED IN -->
+      <a href="login.html" class="block">Login</a>
       <template x-if="user.id">
         <a href="dashboard.html" class="block font-medium text-indigo-600">Dashboard</a>
-        <a href="dashboard.html" class="flex items-center space-x-2 py-1">
-          <img :src="user.avatar" alt="Profile" class="w-8 h-8 rounded-full ring-2 ring-indigo-500">
-        </a>
       </template>
-
       <button @click="dark = !dark" class="flex items-center space-x-2">
         <i x-show="!dark" class="fas fa-moon"></i>
         <i x-show="dark" class="fas fa-sun text-yellow-400"></i>
@@ -143,11 +121,9 @@
       AI-powered, undetectable, 99.9% success rate. Bypass reCAPTCHA, hCaptcha, FunCaptcha, and more.
     </p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade">
-      <template x-if="!user.id">
-        <a href="login.html" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl transition transform hover:-translate-y-1">
-          Get Started
-        </a>
-      </template>
+      <a href="login.html" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl transition transform hover:-translate-y-1">
+        Get Started
+      </a>
       <template x-if="user.id">
         <a href="dashboard.html" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl transition transform hover:-translate-y-1">
           Go to Dashboard
@@ -280,7 +256,7 @@ function app() {
   return {
     mobileMenu: false,
     dark: localStorage.getItem('dark') === 'true',
-    user: { id: '', avatar: '' },
+    user: { id: '' },
 
     init() {
       // Theme
@@ -292,7 +268,7 @@ function app() {
         this.dark = true;
       }
 
-      // Check login
+      // Check login state
       const token = localStorage.getItem('discord_token');
       if (token) {
         this.fetchUser(token);
@@ -308,16 +284,11 @@ function app() {
         return r.json();
       })
       .then(data => {
-        this.user = {
-          id: data.id,
-          avatar: data.avatar
-            ? `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png?size=128`
-            : `https://cdn.discordapp.com/embed/avatars/${data.discriminator % 5}.png`
-        };
+        this.user.id = data.id;
       })
       .catch(() => {
         localStorage.removeItem('discord_token');
-        this.user = { id: '', avatar: '' };
+        this.user.id = '';
       });
     }
   };
