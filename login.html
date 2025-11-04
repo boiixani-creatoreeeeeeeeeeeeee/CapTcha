@@ -8,6 +8,11 @@
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  
   <style>
     body { font-family: 'Inter', sans-serif; }
     .glass-card { 
@@ -21,14 +26,12 @@
       background: rgba(15, 15, 26, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .discord-btn { 
-      background: #5865F2; 
+    .auth-btn { 
       transition: all 0.3s ease; 
     }
-    .discord-btn:hover { 
-      background: #4752C4; 
+    .auth-btn:hover { 
       transform: translateY(-2px); 
-      box-shadow: 0 10px 20px rgba(88, 101, 242, 0.3); 
+      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); 
     }
     .bird-svg { 
       animation: float 6s ease-in-out infinite; 
@@ -43,9 +46,20 @@
     .back-btn:hover {
       transform: translateX(-5px);
     }
+    .input-field {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    .input-field:focus {
+      background: rgba(15, 23, 42, 0.8);
+      border-color: rgba(99, 102, 241, 0.5);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
   </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 min-h-screen flex items-center justify-center p-4" x-data="loginApp()">
+<body class="bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 min-h-screen flex items-center justify-center p-4" x-data="loginApp()" x-init="init()">
 
 <!-- Back to Home Button -->
 <div class="fixed top-6 left-6 z-50">
@@ -74,14 +88,14 @@
             <h1 class="text-2xl md:text-3xl font-bold">CapTcha Tool</h1>
           </div>
           <p class="text-gray-300 text-sm md:text-base mb-8 leading-relaxed">
-            Login with the easy built-in Discord authentication to access your personal dashboard!
+            Login to access your personal dashboard and start solving captchas instantly!
           </p>
           <ul class="space-y-3">
             <li class="flex items-center text-sm md:text-base">
-              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Fast & Secure</span>
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Secure Authentication</span>
             </li>
             <li class="flex items-center text-sm md:text-base">
-              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Simple Authentication</span>
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Fast & Simple</span>
             </li>
             <li class="flex items-center text-sm md:text-base">
               <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Instant Access</span>
@@ -101,8 +115,9 @@
           </svg>
         </div>
       </div>
+      
       <!-- Right Panel -->
-      <div class="p-8 md:p-12 bg-slate-900/50 flex flex-col items-center justify-center text-center text-white">
+      <div class="p-8 md:p-12 bg-slate-900/50 flex flex-col items-center justify-center text-white">
         <div class="mb-8">
           <svg width="120" height="120" viewBox="0 0 140 140" class="bird-svg mx-auto">
             <g transform="translate(70,70)">
@@ -119,17 +134,50 @@
             </g>
           </svg>
         </div>
+        
         <h2 class="text-2xl md:text-3xl font-bold mb-3">Welcome Back!</h2>
-        <p class="text-gray-400 text-sm md:text-base mb-10 max-w-xs">
-          Thanks for using CapTcha Tool. You can now login to your dashboard.
+        <p class="text-gray-400 text-sm md:text-base mb-8 max-w-xs text-center">
+          Login to your account to continue
         </p>
-        <a href="https://discord.com/oauth2/authorize?client_id=963238863256567848&response_type=code&redirect_uri=https%3A%2F%2Fcapovh.github.io%2FCapTcha%2F&scope=identify+guilds"
-           class="discord-btn text-white font-semibold px-8 py-3 rounded-full flex items-center gap-3 text-lg w-fit">
-          <i class="fab fa-discord text-xl"></i>
-          Sign in with Discord
-          <i class="fas fa-arrow-right ml-1"></i>
-        </a>
-        <p class="text-gray-500 text-xs mt-6">
+        
+        <!-- Login Form -->
+        <form @submit.prevent="handleLogin" class="w-full max-w-sm space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-300">Email</label>
+            <input 
+              type="email" 
+              x-model="email" 
+              required
+              placeholder="your@email.com"
+              class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-gray-500"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-300">Password</label>
+            <input 
+              type="password" 
+              x-model="password" 
+              required
+              placeholder="••••••••"
+              class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-gray-500"
+            />
+          </div>
+          
+          <div x-show="errorMessage" class="text-red-400 text-sm text-center" x-text="errorMessage"></div>
+          
+          <button 
+            type="submit" 
+            :disabled="loading"
+            class="auth-btn w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold px-8 py-3 rounded-lg flex items-center justify-center gap-3 text-lg"
+            :class="{ 'opacity-50 cursor-not-allowed': loading }"
+          >
+            <i class="fas" :class="loading ? 'fa-spinner fa-spin' : 'fa-sign-in-alt'"></i>
+            <span x-text="loading ? 'Signing in...' : 'Sign In'"></span>
+          </button>
+        </form>
+        
+        <p class="text-gray-500 text-sm mt-6 text-center">
           Don't have an account? <a href="register.html" class="text-indigo-400 hover:text-indigo-300 transition">Register here</a>
         </p>
       </div>
@@ -138,9 +186,29 @@
 </div>
 
 <script>
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyA9sJoZSzbmKJ-7F9jsYVmf7m4cMJ_JUuA",
+    authDomain: "captcha-finder.firebaseapp.com",
+    projectId: "captcha-finder",
+    storageBucket: "captcha-finder.firebasestorage.app",
+    messagingSenderId: "268327722037",
+    appId: "1:268327722037:web:54ba44e1d4ccc2c734e57c",
+    measurementId: "G-LX1WXZFJCW"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
   function loginApp() {
     return {
       dark: localStorage.getItem('dark') === 'true',
+      email: '',
+      password: '',
+      loading: false,
+      errorMessage: '',
+      
       init() {
         this.$watch('dark', val => {
           document.documentElement.classList.toggle('dark', val);
@@ -150,6 +218,54 @@
           this.dark = true;
         }
         document.documentElement.classList.toggle('dark', this.dark);
+        
+        // Check if user is already logged in
+        auth.onAuthStateChanged(user => {
+          if (user) {
+            window.location.replace('dashboard.html');
+          }
+        });
+      },
+      
+      async handleLogin() {
+        this.loading = true;
+        this.errorMessage = '';
+        
+        try {
+          const userCredential = await auth.signInWithEmailAndPassword(this.email, this.password);
+          console.log('Login successful:', userCredential.user);
+          
+          // Store user info
+          localStorage.setItem('firebase_user', JSON.stringify({
+            uid: userCredential.user.uid,
+            email: userCredential.user.email
+          }));
+          
+          // Redirect to dashboard
+          window.location.replace('dashboard.html');
+        } catch (error) {
+          console.error('Login error:', error);
+          
+          // User-friendly error messages
+          switch (error.code) {
+            case 'auth/user-not-found':
+              this.errorMessage = 'No account found with this email.';
+              break;
+            case 'auth/wrong-password':
+              this.errorMessage = 'Incorrect password.';
+              break;
+            case 'auth/invalid-email':
+              this.errorMessage = 'Invalid email address.';
+              break;
+            case 'auth/too-many-requests':
+              this.errorMessage = 'Too many attempts. Please try again later.';
+              break;
+            default:
+              this.errorMessage = 'Login failed. Please try again.';
+          }
+          
+          this.loading = false;
+        }
       }
     };
   }
