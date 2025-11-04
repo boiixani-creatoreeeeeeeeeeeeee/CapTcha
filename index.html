@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Captcha Finder</title>
+  <title>CapTcha Tool</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root { --primary: #4a6fa5; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --light: #f8f9fa; --dark: #343a40; --bg: #f5f7fa; --card-bg: white; --text: #2d3748; --border: #e2e8f0; --header-bg: rgba(255,255,255,0.95); --footer-bg: #343a40; --footer-text: #ccc; --scrollbar-track: #f1f1f1; --scrollbar-thumb: #4a6fa5; --scrollbar-thumb-hover: #3a5a8a; }
-    [data-theme="dark"] { --primary: #6c9eff; --secondary: #a0aec0; --success: #48bb78; --danger: #f56565; --light: #2d3748; --dark: #f7fafc; --bg: #0f172a; --card-bg: #1e293b; --text: #e2e8f0; --border: #334155; --header-bg: rgba(15,23,42,0.95); --footer-bg: #0a0e1a; --footer-text: #94a3b8; --scrollbar-track: #1e293b; --scrollbar-thumb: #6c9eff; --scrollbar-thumb-hover: #5b8cff; }
+    :root { --primary: #4a6fa5; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --light: #f8f9fa; --dark: #343a40; --bg: #f5f7fa; --card-bg: white; --text: #2d3748; --border: #e2e8f0; --header-bg: rgba(255,255,255,0.95); --footer-bg: #343a40; --footer-text: #ccc; }
+    [data-theme="dark"] { --primary: #6c9eff; --secondary: #a0aec0; --success: #48bb78; --danger: #f56565; --light: #2d3748; --dark: #f7fafc; --bg: #0f172a; --card-bg: #1e293b; --text: #e2e8f0; --border: #334155; --header-bg: rgba(15,23,42,0.95); --footer-bg: #0a0e1a; --footer-text: #94a3b8; }
     * { margin:0; padding:0; box-sizing:border-box; transition:background .3s,color .3s,border-color .3s; }
     body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,var(--bg),color-mix(in srgb,var(--bg),black 20%)); color:var(--text); line-height:1.6; min-height:100vh; display:flex; flex-direction:column; }
     header { background:var(--header-bg); backdrop-filter:blur(10px); box-shadow:0 2px 10px rgba(0,0,0,.1); padding:1rem 0; position:sticky; top:0; z-index:100; }
@@ -20,6 +20,8 @@
     .user-menu .username { color:var(--primary); font-weight:600; }
     .user-menu .logout { color:var(--danger); }
     .user-menu .logout:hover { text-decoration:underline; }
+    .btn-outline { background:transparent; color:var(--primary); border:2px solid var(--primary); padding:0.5rem 1rem; border-radius:12px; font-size:0.9rem; }
+    .btn-outline:hover { background:var(--primary); color:white; }
     .theme-toggle { background:var(--card-bg); border:2px solid var(--border); border-radius:50px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1rem; color:var(--text); box-shadow:0 4px 15px rgba(0,0,0,.1); transition:all .3s; }
     .theme-toggle:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.15); border-color:var(--primary); }
     main { flex:1; padding:3rem 0; }
@@ -28,20 +30,18 @@
     .hero p { font-size:1.2rem; color:var(--secondary); max-width:700px; margin:auto auto 2rem; }
     .search-box { display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
     .input-group { flex:1; min-width:300px; position:relative; }
-    .input-group input { width:100%; padding:1rem 1rem 1rem 3rem; border:2px solid var(--border); border-radius:12px; font-size:1rem; background:var(--card-bg); color:var(--text); transition:all .3s; }
-    .input-group input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px color-mix(in srgb,var(--primary),transparent 80%); }
+    .input-group input { width:100%; padding:1rem 1rem 1rem 3rem; border:2px solid var(--border); border-radius:12px; font-size:1rem; background:var(--card-bg); color:var(--text); }
     .input-group i { position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:var(--secondary); }
-    .btn { padding:1rem 2rem; border:none; border-radius:12px; font-size:1rem; font-weight:600; cursor:pointer; transition:all .3s; display:inline-flex; align-items:center; gap:.5rem; text-decoration:none; }
-    .btn-primary { background:var(--primary); color:white; }
-    .btn-primary:hover { background:color-mix(in srgb,var(--primary),black 20%); transform:translateY(-2px); box-shadow:0 8px 25px color-mix(in srgb,var(--primary),transparent 70%); }
-    footer { background:var(--footer-bg); color:var(--footer-text); padding:3rem 0 1rem; margin-top:3rem; text-align:center; }
+    .btn-primary { background:var(--primary); color:white; padding:1rem 2rem; border:none; border-radius:12px; font-weight:600; cursor:pointer; }
+    .btn-primary:hover { background:color-mix(in srgb,var(--primary),black 20%); }
+    footer { background:var(--footer-bg); color:var(--footer-text); padding:2rem 0; text-align:center; font-size:.9rem; }
   </style>
 </head>
 <body>
   <header>
     <div class="container">
       <div class="header-content">
-        <a href="/" class="logo"><i class="fas fa-shield-alt"></i>Captcha Finder</a>
+        <a href="/" class="logo"><i class="fas fa-shield-alt"></i>CapTcha</a>
         <div class="user-menu" id="userMenu">
           <a href="login.html">Login</a>
           <a href="register.html">Register</a>
@@ -60,15 +60,15 @@
         <p>Quickly detect and analyze CAPTCHA implementations across websites.</p>
         <div class="search-box">
           <div class="input-group"><i class="fas fa-globe"></i><input type="url" id="urlInput" placeholder="https://example.com" required></div>
-          <button class="btn btn-primary" id="scanBtn"><i class="fas fa-search"></i> Scan</button>
+          <button class="btn-primary" id="scanBtn"><i class="fas fa-search"></i> Scan</button>
         </div>
       </section>
     </div>
   </main>
 
-  <footer>© 2025 Captcha Finder</footer>
+  <footer>© 2025 CapTcha Tool</footer>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 
@@ -84,7 +84,7 @@
     };
     firebase.initializeApp(firebaseConfig);
 
-    // Theme toggle
+    // Theme
     const toggle = document.getElementById('themeToggle'), body = document.body, icon = toggle.querySelector('i');
     const theme = localStorage.getItem('theme') || 'light'; body.dataset.theme = theme;
     icon.classList.toggle('fa-sun', theme === 'dark'); icon.classList.toggle('fa-moon', theme === 'light');
@@ -95,15 +95,13 @@
       icon.classList.toggle('fa-sun', !isDark); icon.classList.toggle('fa-moon', isDark);
     };
 
-    // User menu + Dashboard button
+    // User menu
     const userMenu = document.getElementById('userMenu');
-    function updateUserMenu(user) {
+    function updateMenu(user) {
       if (user) {
         const name = user.email.split('@')[0];
         userMenu.innerHTML = `
-          <a href="dashboard.html" class="btn btn-outline" style="padding:0.5rem 1rem;font-size:0.9rem;">
-            <i class="fas fa-tachometer-alt"></i> Dashboard
-          </a>
+          <a href="dashboard.html" class="btn-outline"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
           <span class="username">${name}</span>
           <button class="logout" onclick="logout()">Logout</button>
         `;
@@ -111,22 +109,17 @@
         userMenu.innerHTML = `<a href="login.html">Login</a> <a href="register.html">Register</a>`;
       }
     }
+    window.logout = () => firebase.auth().signOut().then(() => location.reload());
 
-    window.logout = () => {
-      firebase.auth().signOut().then(() => location.reload());
-    };
-
-    // Check auth state
     firebase.auth().onAuthStateChanged(user => {
-      updateUserMenu(user);
-      localStorage.setItem('user', user ? JSON.stringify(user) : '');
+      updateMenu(user);
     });
 
-    // Scan logic (placeholder)
+    // Scan (demo)
     document.getElementById('scanBtn').onclick = () => {
       const url = document.getElementById('urlInput').value;
       if (!url) return alert('Enter a URL');
-      alert(`Scanning ${url}... (backend not connected yet)`);
+      alert(`Scanning ${url}...`);
     };
   </script>
 </body>
