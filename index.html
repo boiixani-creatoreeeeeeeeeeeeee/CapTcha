@@ -3,293 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CapTcha Tool – AI Captcha Solver</title>
+  <title>Login – CapTcha Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .glass {
-      background: rgba(255,255,255,0.12);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    .dark .glass {
-      background: rgba(15,15,26,0.6);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
-    .animate-fade { animation: fadeIn 0.6s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    /* 3-D floating card */
-    .float-card {
-      transition: transform .3s ease, box-shadow .3s ease;
-    }
-    .float-card:hover {
-      transform: translateY(-12px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(99,102,241,.25);
-    }
-    .pro-card {
-      transform: translateY(-8px) scale(1.03);
-      box-shadow: 0 15px 30px rgba(99,102,241,.2);
-    }
-    .pro-badge {
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,.7); }
-      50% { box-shadow: 0 0 0 8px rgba(99,102,241,0); }
-    }
-    .buy-btn {
-      transition: all 0.2s ease;
-    }
-    .buy-btn.loading {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
+    .glass-card { background: rgba(30, 35, 55, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
+    .discord-btn { background: #5865F2; transition: all 0.3s ease; }
+    .discord-btn:hover { background: #4752C4; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(88, 101, 242, 0.3); }
+    .bird-svg { animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
   </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300" x-data="app()">
-
-<!-- Navbar -->
-<header class="fixed top-0 w-full z-50 glass border-b border-white/10">
-  <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
-    <a href="/" class="flex items-center space-x-2">
-      <img src="assets/logo.svg" alt="CapTcha Tool" class="w-10 h-10">
-      <span class="text-xl font-bold">CapTcha Tool</span>
-    </a>
-    <div class="hidden md:flex items-center space-x-6">
-      <a href="#features" class="hover:text-indigo-400 transition">Features</a>
-      <a href="#pricing" class="hover:text-indigo-400 transition">Pricing</a>
-      <a href="login.html" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">Login</a>
-      <a href="register.html" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">Register</a>
-      <!-- Dark-mode toggle -->
-      <button @click="dark = !dark" class="ml-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-        <i x-show="!dark" class="fas fa-moon text-lg"></i>
-        <i x-show="dark" class="fas fa-sun text-lg text-yellow-400"></i>
-      </button>
-    </div>
-    <button @click="mobileMenu = !mobileMenu" class="md:hidden">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
-  </nav>
-  <!-- Mobile menu -->
-  <div x-show="mobileMenu" class="md:hidden bg-white/95 dark:bg-gray-800/95 glass" x-transition>
-    <div class="container mx-auto px-4 py-4 space-y-3">
-      <a href="#features" class="block">Features</a>
-      <a href="#pricing" class="block">Pricing</a>
-      <a href="login.html" class="block">Login</a>
-      <a href="register.html" class="block text-indigo-600 font-medium">Register</a>
-      <button @click="dark = !dark" class="flex items-center space-x-2">
-        <i x-show="!dark" class="fas fa-moon"></i>
-        <i x-show="dark" class="fas fa-sun text-yellow-400"></i>
-        <span>Toggle Theme</span>
-      </button>
-    </div>
-  </div>
-</header>
-
-<!-- Hero -->
-<section class="pt-32 pb-20 px-4">
-  <div class="container mx-auto text-center">
-    <h1 class="text-5xl md:text-6xl font-extrabold mb-6 animate-fade">
-      Solve Any Captcha <span class="text-transparent bg-clip-text gradient-bg">in Milliseconds</span>
-    </h1>
-    <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto animate-fade">
-      AI-powered, undetectable, 99.9% success rate. Bypass reCAPTCHA, hCaptcha, FunCaptcha, and more.
-    </p>
-    <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade">
-      <a href="dashboard.html" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl transition transform hover:-translate-y-1">
-        Get Started
-      </a>
-      <a href="#features" class="px-8 py-4 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-        See Features
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- Features -->
-<section id="features" class="py-20 px-4 bg-white dark:bg-gray-800">
-  <div class="container mx-auto">
-    <h2 class="text-4xl font-bold text-center mb-12">Why Choose CapTcha Tool?</h2>
-    <div class="grid md:grid-cols-3 gap-8">
-      <div class="float-card text-center p-6 rounded-2xl glass hover:shadow-xl transition">
-        <div class="w-16 h-16 mx-auto mb-4 gradient-bg rounded-xl flex items-center justify-center text-white text-2xl">Lightning</div>
-        <h3 class="text-xl font-semibold mb-2">Lightning Fast</h3>
-        <p class="text-gray-600 dark:text-gray-300">Average solve time: <strong>1.2s</strong></p>
+<body class="bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 min-h-screen flex items-center justify-center p-4">
+<div class="w-full max-w-5xl">
+  <div class="glass-card rounded-3xl overflow-hidden">
+    <div class="grid md:grid-cols-2 gap-0">
+      <!-- Left Panel -->
+      <div class="p-8 md:p-12 flex flex-col justify-between text-white">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold mb-3">CapTcha Tool</h1>
+          <p class="text-gray-300 text-sm md:text-base mb-8 leading-relaxed">
+            Login with the easy built-in Discord authentication to access your personal dashboard!
+          </p>
+          <ul class="space-y-3">
+            <li class="flex items-center text-sm md:text-base">
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Fast</span>
+            </li>
+            <li class="flex items-center text-sm md:text-base">
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Simple</span>
+            </li>
+            <li class="flex items-center text-sm md:text-base">
+              <i class="fas fa-check-circle text-green-400 mr-3"></i> <span>Responsive</span>
+            </li>
+          </ul>
+        </div>
+        <div class="mt-10 md:mt-16 flex justify-center md:block">
+          <svg width="180" height="180" viewBox="0 0 200 200" class="hidden md:block opacity-80">
+            <g transform="translate(100,100)">
+              <path d="M-40,-40 L-40,-70 L-10,-85 L40,-70 L40,-40 L20,-40 L20,10 L-20,10 L-20,-40 Z" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+              <rect x="-15" y="-35" width="30" height="45" fill="#1e40af"/>
+              <circle cx="0" cy="-55" r="8" fill="#fbbf24"/>
+              <path d="M-50,0 Q-60,-10 -55,-20 Q-50,-25 -45,-20 Q-40,-10 -50,0" fill="#fb923c"/>
+              <path d="M50,5 Q60,-5 55,-15 Q50,-20 45,-15 Q40,-5 50,5" fill="#fb923c"/>
+              <path d="M-30,-30 Q-35,-35 -32,-40 Q-28,-42 -25,-38 Q-22,-35 -27,-32" fill="#60a5fa"/>
+            </g>
+          </svg>
+        </div>
       </div>
-      <div class="float-card text-center p-6 rounded-2xl glass hover:shadow-xl transition">
-        <div class="w-16 h-16 mx-auto mb-4 gradient-bg rounded-xl flex items-center justify-center text-white text-2xl">Target</div>
-        <h3 class="text-xl font-semibold mb-2">99.9% Accuracy</h3>
-        <p class="text-gray-600 dark:text-gray-300">AI trained on millions of captchas</p>
-      </div>
-      <div class="float-card text-center p-6 rounded-2xl glass hover:shadow-xl transition">
-        <div class="w-16 h-16 mx-auto mb-4 gradient-bg rounded-xl flex items-center justify-center text-white text-2xl">Lock</div>
-        <h3 class="text-xl font-semibold mb-2">Undetectable</h3>
-        <p class="text-gray-600 dark:text-gray-300">No fingerprints, no bans</p>
+      <!-- Right Panel -->
+      <div class="p-8 md:p-12 bg-slate-900/50 flex flex-col items-center justify-center text-center text-white">
+        <div class="mb-8">
+          <svg width="120" height="120" viewBox="0 0 140 140" class="bird-svg mx-auto">
+            <g transform="translate(70,70)">
+              <path d="M0,-40 Q-15,-50 -30,-45 Q-45,-40 -50,-25 Q-45,-10 -30,0 Q-15,-5 0,-15 Q15,-5 30,0 Q45,-10 50,-25 Q45,-40 30,-45 Q15,-50 0,-40"
+                    fill="url(#birdGradient)" stroke="#60a5fa" stroke-width="2"/>
+              <defs>
+                <linearGradient id="birdGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#93c5fd"/>
+                  <stop offset="100%" stop-color="#60a5fa"/>
+                </linearGradient>
+              </defs>
+              <path d="M-35,-15 Q-50,-25 -45,-35 Q-35,-40 -25,-30" fill="#60a5fa" opacity="0.8"/>
+              <path d="M35,-15 Q50,-25 45,-35 Q35,-40 25,-30" fill="#60a5fa" opacity="0.8"/>
+            </g>
+          </svg>
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold mb-3">Welcome Back!</h2>
+        <p class="text-gray-400 text-sm md:text-base mb-10 max-w-xs">
+          Thanks for using CapTcha Tool. You can now login to your dashboard.
+        </p>
+        <!-- FINAL: EXACT REDIRECT URL -->
+        <a href="https://discord.com/oauth2/authorize?client_id=963238863256567848&response_type=token&redirect_uri=https%3A%2F%2Fcapovh.github.io%2FCapTcha%2Fdashboard.html&scope=identify%20email"
+           class="discord-btn text-white font-semibold px-8 py-3 rounded-full flex items-center gap-3 text-lg w-fit">
+          <i class="fab fa-discord"></i>
+          Sign in with Discord
+          <i class="fas fa-arrow-right ml-1"></i>
+        </a>
       </div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- Pricing -->
-<section id="pricing" class="py-20 px-4">
-  <div class="container mx-auto">
-    <h2 class="text-4xl font-bold text-center mb-4">Simple, Transparent Pricing</h2>
-    <p class="text-center text-gray-600 dark:text-gray-300 mb-12">Choose your key duration – instant access after purchase</p>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
-
-      <!-- Day Key -->
-      <div class="float-card rounded-2xl p-6 glass border border-gray-200 dark:border-gray-700 text-center">
-        <div class="w-12 h-12 mx-auto mb-4 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-white text-xl">
-          <i class="fas fa-clock"></i>
-        </div>
-        <h3 class="text-lg font-semibold mb-2">Day Key</h3>
-        <p class="text-2xl font-bold mb-4">$10</p>
-        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-2 mb-6 text-left mx-auto max-w-xs">
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> 24-hour access</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Unlimited solves</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Basic support</li>
-        </ul>
-        <button onclick="buyPlan(390153, 555558, this, 'Buy Day Key')" class="buy-btn w-full py-2 border border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition">Buy Day Key</button>
-      </div>
-
-      <!-- Week Key -->
-      <div class="float-card rounded-2xl p-6 glass border border-gray-200 dark:border-gray-700 text-center">
-        <div class="w-12 h-12 mx-auto mb-4 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center text-white text-xl">
-          <i class="fas fa-calendar-week"></i>
-        </div>
-        <h3 class="text-lg font-semibold mb-2">Week Key</h3>
-        <p class="text-2xl font-bold mb-4">$20</p>
-        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-2 mb-6 text-left mx-auto max-w-xs">
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> 7-day access</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Unlimited solves</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Priority support</li>
-        </ul>
-        <button onclick="buyPlan(390155, 555560, this, 'Buy Week Key')" class="buy-btn w-full py-2 border border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition">Buy Week Key</button>
-      </div>
-
-      <!-- Month Key -->
-      <div class="float-card rounded-2xl p-6 glass border border-gray-200 dark:border-gray-700 text-center">
-        <div class="w-12 h-12 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white text-xl">
-          <i class="fas fa-calendar-alt"></i>
-        </div>
-        <h3 class="text-lg font-semibold mb-2">Month Key</h3>
-        <p class="text-2xl font-bold mb-4">$35</p>
-        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-2 mb-6 text-left mx-auto max-w-xs">
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> 30-day access</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Unlimited solves</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> API + Webhook</li>
-        </ul>
-        <button onclick="buyPlan(390156, 555561, this, 'Buy Month Key')" class="buy-btn w-full py-2 border border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition">Buy Month Key</button>
-      </div>
-
-      <!-- Lifetime -->
-      <div class="float-card rounded-2xl p-6 glass border border-gray-200 dark:border-gray-700 text-center">
-        <div class="w-12 h-12 mx-auto mb-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-xl">
-          <i class="fas fa-infinity"></i>
-        </div>
-        <h3 class="text-lg font-semibold mb-2">Lifetime</h3>
-        <p class="text-2xl font-bold mb-4">$80</p>
-        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-2 mb-6 text-left mx-auto max-w-xs">
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Permanent access</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Unlimited solves</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Premium support</li>
-        </ul>
-        <button onclick="buyPlan(390158, 555563, this, 'Buy Lifetime')" class="buy-btn w-full py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">Buy Lifetime</button>
-      </div>
-
-      <!-- Premium (POPULAR) -->
-      <div class="pro-card float-card rounded-2xl p-6 glass border-2 border-indigo-500 text-center relative">
-        <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-xs px-3 py-1 rounded-full pro-badge">POPULAR</span>
-        <div class="w-12 h-12 mx-auto mb-4 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white text-xl">
-          <i class="fas fa-crown"></i>
-        </div>
-        <h3 class="text-lg font-semibold mb-2">Premium</h3>
-        <p class="text-2xl font-bold mb-4">$50</p>
-        <ul class="text-sm text-gray-600 dark:text-gray-300 space-y-2 mb-6 text-left mx-auto max-w-xs">
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> 90-day access</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Unlimited solves</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Custom API</li>
-          <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> 24/7 priority</li>
-        </ul>
-        <button onclick="buyPlan(403702, 579350, this, 'Buy Premium')" class="buy-btn w-full py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">Buy Premium</button>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer class="bg-gray-100 dark:bg-gray-800 py-12 px-4">
-  <div class="container mx-auto text-center text-gray-600 dark:text-gray-400">
-    <p>© 2025 CapTcha Tool. All rights reserved.</p>
-  </div>
-</footer>
-
-<!-- SellAuth Embed Script -->
-<script src="https://sellauth.com/assets/js/sellauth-embed-2.js"></script>
-
+<!-- SILENT ERROR HANDLING -->
 <script>
-  function app() {
-    return {
-      mobileMenu: false,
-      dark: localStorage.getItem('dark') === 'true',
-      init() {
-        this.$watch('dark', val => {
-          if (val) document.documentElement.classList.add('dark');
-          else document.documentElement.classList.remove('dark');
-          localStorage.setItem('dark', val);
-        });
-        if (localStorage.getItem('dark') === null && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          this.dark = true;
-        } else {
-          this.dark = localStorage.getItem('dark') === 'true';
-        }
-      }
-    };
-  }
-
-  // Secure checkout with loading state & error handling
-  function buyPlan(productId, variantId, button, originalText) {
-    const shopId = 159058;
-
-    // Prevent double click
-    if (button.classList.contains('loading')) return;
-
-    // Show loading
-    button.textContent = 'Loading...';
-    button.classList.add('loading');
-
-    // Log for debugging
-    console.log(`[SellAuth] Opening checkout → Product: ${productId}, Variant: ${variantId}`);
-
-    // Safety check
-    if (!window.sellAuthEmbed) {
-      alert('Checkout failed: SellAuth not loaded. Check internet or try again.');
-      button.textContent = originalText;
-      button.classList.remove('loading');
-      return;
-    }
-
-    try {
-      window.sellAuthEmbed.checkout(null, {
-        shopId: shopId,
-        cart: [{ productId: productId, variantId: variantId, quantity: 1 }]
-      });
-    } catch (err) {
-      console.error('Checkout error:', err);
-      alert('Checkout failed. Please try again or contact support.');
-    }
-
-    // Reset button after delay
-    setTimeout(() => {
-      button.textContent = originalText;
-      button.classList.remove('loading');
-    }, 3000);
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('error')) {
+    window.location.href = 'login.html';
   }
 </script>
 </body>
