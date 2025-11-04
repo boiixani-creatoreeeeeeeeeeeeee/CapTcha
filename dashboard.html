@@ -96,7 +96,6 @@ function dashboard() {
     apiKey: 'ct_sk_8f9e2a1b3c4d5e6f7g8h9i0j1k2l3m4n',
 
     init() {
-      // Read token from URL hash
       const hash = window.location.hash.substring(1);
       if (!hash) {
         this.redirectToLogin();
@@ -112,11 +111,10 @@ function dashboard() {
         return;
       }
 
-      // Fetch user
       fetch('https://discord.com/api/users/@me', {
         headers: { 'Authorization': `${token_type} ${access_token}` }
       })
-      .then(r => r.ok ? r.json() : Promise.reject('Invalid token'))
+      .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
         this.user = {
           id: data.id,
@@ -132,8 +130,7 @@ function dashboard() {
         this.initChart();
       })
       .catch(() => {
-        alert('Login failed. Redirecting...');
-        this.redirectToLogin();
+        this.redirectToLogin(); // Silent redirect
       });
     },
 
@@ -152,7 +149,7 @@ function dashboard() {
             label: 'Solves',
             data: [120, 190, 300, 250, 400, 380, 842],
             borderColor: '#a78bfa',
-            backgroundColor: 'rgba(167, 139,  praises250, 0.1)',
+            backgroundColor: 'rgba(167, 139, 250, 0.1)',
             tension: 0.4,
             fill: true
           }]
