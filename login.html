@@ -74,7 +74,6 @@
         <p class="text-gray-400 text-sm md:text-base mb-10 max-w-xs">
           Thanks for using CapTcha Tool. You can now login to your dashboard.
         </p>
-        <!-- FINAL URL: EXACT MATCH -->
         <a href="https://discord.com/oauth2/authorize?client_id=963238863256567848&response_type=token&redirect_uri=https%3A%2F%2Fcapovh.github.io%2FCapTcha%2Fdashboard.html&scope=identify%20email"
            class="discord-btn text-white font-semibold px-8 py-3 rounded-full flex items-center gap-3 text-lg w-fit">
           <i class="fab fa-discord"></i>
@@ -85,13 +84,5 @@
     </div>
   </div>
 </div>
-
-<!-- ERROR HANDLING: Catch Discord errors -->
-<script>
-// SILENT ERROR HANDLING — NO ALERTS
-if (new URLSearchParams(window.location.search).get('error')) {
-  window.location.replace('login.html');
-}
-</script>
 </body>
 </html>
