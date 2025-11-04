@@ -78,17 +78,23 @@
       async handleLogin() {
         this.loading = true; this.errorMessage = '';
         try {
+          // Perform Firebase login
           const userCred = await auth.signInWithEmailAndPassword(this.email.trim(), this.password);
           const token = await userCred.user.getIdToken();
+
+          // Store user data
           localStorage.setItem('firebase_user', JSON.stringify({
             uid: userCred.user.uid,
             email: userCred.user.email,
             token
           }));
+
+          // After successful login, redirect to dashboard
           document.body.classList.add('fade-out');
           setTimeout(() => window.location.href = 'dashboard.html', 400);
         } catch (e) {
           this.loading = false;
+          // Handle errors
           switch (e.code) {
             case 'auth/user-not-found': this.errorMessage = 'No account found with this email.'; break;
             case 'auth/wrong-password': this.errorMessage = 'Incorrect password.'; break;
