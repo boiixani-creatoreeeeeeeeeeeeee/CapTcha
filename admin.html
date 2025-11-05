@@ -9,7 +9,7 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen relative">
 
-<!-- CONDITIONAL FORCE LOGOUT: Only shows during loading, auto-hides after 3s -->
+<!-- CONDITIONAL FORCE LOGOUT: Only during loading, auto-hides after 3s -->
 <div x-show="loading && showForceLogout" class="absolute top-4 right-4 z-50">
   <button @click="forceLogout()" 
           class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-lg transition">
@@ -137,7 +137,16 @@
 // === CONFIG ===
 const DISCORD_CLIENT_ID = '963238863256567848';
 const REDIRECT_URI = 'https://capovh.github.io/CapTcha/admin.html';
-const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/capovh/CapTcha/main/keyx.txt';
+
+// PRIVATE GITHUB ACCESS
+const GITHUB_TOKEN = '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';  // YOUR TOKEN
+const GITHUB_REPO = '72395839745598327589k/dsadasdasd324e3242';
+const GITHUB_PATH = 'keys.txt';
+const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
+
+// Fallback public URL (if token fails)
+const GITHUB_FALLBACK_URL = 'https://raw.githubusercontent.com/capovh/CapTcha/main/keyx.txt';
+
 const ADMIN_DISCORD_IDS = ['1393017932610666577', '805954114231205978'];
 
 function admin() {
@@ -152,13 +161,11 @@ function admin() {
     forceLogoutTimer: null,
 
     async init() {
-      // Only run if on correct page
       if (!window.location.pathname.includes('admin.html')) return;
 
       this.loading = true;
       this.showForceLogout = false;
 
-      // Show Force Logout after 3s if still loading
       this.forceLogoutTimer = setTimeout(() => {
         if (this.loading) this.showForceLogout = true;
       }, 3000);
@@ -217,10 +224,34 @@ function admin() {
     async loadData() {
       this.loading = true;
       try {
-        const res = await fetch(GITHUB_RAW_URL, { cache: 'no-store' });
-        if (!res.ok) throw new Error('keys.txt not found');
+        let text = '';
 
-        const text = await res.text();
+        // Try private repo via GitHub API
+        try {
+          const apiRes = await fetch(GITHUB_API_URL, {
+            headers: {
+              'Authorization': `token ${GITHUB_TOKEN}`,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
+
+          if (apiRes.ok) {
+            const data = await apiRes.json();
+            if (data.content && data.encoding === 'base64') {
+              text = atob(data.content);
+            }
+          }
+        } catch (e) {
+          console.warn('Private repo failed, trying public...', e);
+        }
+
+        // Fallback to public raw URL
+        if (!text) {
+          const rawRes = await fetch(GITHUB_FALLBACK_URL, { cache: 'no-store' });
+          if (!rawRes.ok) throw new Error('Both sources failed');
+          text = await rawRes.text();
+        }
+
         const lines = text.trim().split('\n').filter(l => l);
         this.keys = lines.map(line => {
           const [code, plan, expires, claimedBy = '—'] = line.split('|');
@@ -233,6 +264,7 @@ function admin() {
             claimedBy
           };
         });
+
       } catch (err) {
         alert('Failed to load keys: ' + err.message);
         this.keys = [];
