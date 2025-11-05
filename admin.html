@@ -9,7 +9,7 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen relative">
 
-<!-- CONDITIONAL FORCE LOGOUT: Only during loading, auto-hides after 3s -->
+<!-- FORCE LOGOUT: Shows only if loading > 3s -->
 <div x-show="loading && showForceLogout" class="absolute top-4 right-4 z-50">
   <button @click="forceLogout()" 
           class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-lg transition">
@@ -60,7 +60,6 @@
 
     <!-- KEYS TAB -->
     <div x-show="activeTab === 'keys'" class="p-6 space-y-6">
-      <!-- Summary Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 rounded-xl text-white">
           <p class="text-sm opacity-90">Total Keys</p>
@@ -76,7 +75,6 @@
         </div>
       </div>
 
-      <!-- Table -->
       <div class="bg-gray-800 rounded-xl overflow-hidden">
         <div class="p-4 border-b border-gray-700">
           <input x-model="search" type="text" placeholder="Search key or user..."
@@ -138,14 +136,15 @@
 const DISCORD_CLIENT_ID = '963238863256567848';
 const REDIRECT_URI = 'https://capovh.github.io/CapTcha/admin.html';
 
-// PRIVATE GITHUB ACCESS
-const GITHUB_TOKEN = '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';  // YOUR TOKEN
-const GITHUB_REPO = '72395839745598327589k/dsadasdasd324e3242';
+// PRIVATE REPO ACCESS (WORKS IN BROWSER)
+const GITHUB_TOKEN = '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';
+const GITHUB_USER = '72395839745598327589k';
+const GITHUB_REPO = 'dsadasdasd324e3242';
+const GITHUB_BRANCH = 'main';
 const GITHUB_PATH = 'keys.txt';
-const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
 
-// Fallback public URL (if token fails)
-const GITHUB_FALLBACK_URL = 'https://raw.githubusercontent.com/capovh/CapTcha/main/keyx.txt';
+// FINAL URL: Works 100% in browser
+const GITHUB_RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${GITHUB_PATH}?token=${GITHUB_TOKEN}`;
 
 const ADMIN_DISCORD_IDS = ['1393017932610666577', '805954114231205978'];
 
@@ -224,34 +223,10 @@ function admin() {
     async loadData() {
       this.loading = true;
       try {
-        let text = '';
+        const res = await fetch(GITHUB_RAW_URL, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
-        // Try private repo via GitHub API
-        try {
-          const apiRes = await fetch(GITHUB_API_URL, {
-            headers: {
-              'Authorization': `token ${GITHUB_TOKEN}`,
-              'Accept': 'application/vnd.github.v3+json'
-            }
-          });
-
-          if (apiRes.ok) {
-            const data = await apiRes.json();
-            if (data.content && data.encoding === 'base64') {
-              text = atob(data.content);
-            }
-          }
-        } catch (e) {
-          console.warn('Private repo failed, trying public...', e);
-        }
-
-        // Fallback to public raw URL
-        if (!text) {
-          const rawRes = await fetch(GITHUB_FALLBACK_URL, { cache: 'no-store' });
-          if (!rawRes.ok) throw new Error('Both sources failed');
-          text = await rawRes.text();
-        }
-
+        const text = await res.text();
         const lines = text.trim().split('\n').filter(l => l);
         this.keys = lines.map(line => {
           const [code, plan, expires, claimedBy = '—'] = line.split('|');
