@@ -18,39 +18,29 @@
     body { font-family: 'Inter', sans-serif; }
     .glass { @apply bg-white/10 backdrop-blur-md border border-white/10 rounded-xl; }
     .dark .glass { @apply bg-gray-800/80 border-gray-700/50; }
-    /* Sidebar Tooltip */
     [x-tooltip] {
       position: relative;
     }
     [x-tooltip]::after {
       content: attr(x-tooltip);
       position: absolute;
-      left: 100%;
-      top: 50%;
-      transform: translateY(-50%);
-      margin-left: 8px;
-      background: #1f2937;
-      color: white;
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-      z-index: 10;
+      left: 100%; top: 50%; transform: translateY(-50%);
+      margin-left: 8px; background: #1f2937; color: white;
+      font-size: 12px; padding: 4px 8px; border-radius: 6px;
+      white-space: nowrap; opacity: 0; pointer-events: none;
+      transition: opacity 0.2s; z-index: 10;
     }
     [x-tooltip]:hover::after { opacity: 1; }
-    /* Smooth collapse */
     [x-collapse] { transition: height 0.3s ease; }
   </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-gray-100 min-h-screen" x-data="dashboard()" x-init="feather.replace(); initAuth()">
+
 <!------------------- TOP NAVBAR ------------------->
 <header class="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-700 flex items-center justify-between px-6 py-4">
   <div class="flex items-center space-x-4">
     <a href="index.html" class="flex items-center space-x-2">
-      <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">CT</div>
+      <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg">CT</div>
       <span class="text-xl font-bold">CapTcha</span>
     </a>
   </div>
@@ -61,31 +51,62 @@
       <i x-show="$store.dark" data-feather="sun" class="w-5 h-5 text-yellow-400"></i>
     </button>
     <!-- User avatar -->
-    <div class="relative" x-data="{open:false}">
-      <button @click="open=!open" class="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-800/50">
-        <img :src="user?.photoURL || 'https://via.placeholder.com/32'" class="w-8 h-8 rounded-full">
+    <div class="relative" x-data="{ open: false }">
+      <button @click="open = !open" class="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-800/50">
+        <img :src="discordUser?.avatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` : (user?.photoURL || 'https://ui-avatars.com/api/?name=' + (user?.displayName || user?.email))"
+             class="w-8 h-8 rounded-full border border-gray-600">
         <i data-feather="chevron-down" class="w-4 h-4"></i>
       </button>
-      <div x-show="open" @click.away="open=false" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl py-2 border border-gray-700">
-        <a href="#" class="block px-4 py-2 hover:bg-gray-700">Profile</a>
-        <button @click="logout()" class="w-full text-left px-4 py-2 hover:bg-gray-700">Logout</button>
+      <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-60 glass rounded-lg shadow-xl py-2 border border-gray-700">
+        <div class="px-4 py-2 border-b border-gray-700">
+          <p class="text-xs text-gray-400">Signed in as</p>
+          <p class="font-medium truncate" x-text="user?.email"></p>
+        </div>
+        <a href="#" class="flex items-center space-x-2 px-4 py-2 hover:bg-gray-700/50 transition">
+          <i data-feather="user" class="w-4 h-4"></i>
+          <span>Profile</span>
+        </a>
+
+        <!-- Link Discord -->
+        <button @click="linkDiscord()" x-show="!discordUser" class="flex items-center space-x-2 w-full text-left px-4 py-2 hover:bg-gray-700/50 transition text-indigo-400">
+          <i class="fab fa-discord w-4 h-4"></i>
+          <span>Link Discord</span>
+        </button>
+
+        <!-- Discord Tag -->
+        <div x-show="discordUser" class="px-4 py-1 text-xs text-gray-400 border-t border-gray-700 mt-1 flex items-center space-x-1">
+          <i class="fab fa-discord w-3 h-3"></i>
+          <span x-text="discordUser.username + '#' + discordUser.discriminator"></span>
+        </div>
+
+        <!-- Verify Account -->
+        <button @click="verifyAccount()" class="flex items-center space-x-2 w-full text-left px-4 py-2 hover:bg-gray-700/50 transition text-cyan-400">
+          <i data-feather="shield-check" class="w-4 h-4"></i>
+          <span>Verify Account</span>
+        </button>
+
+        <button @click="logout()" class="flex items-center space-x-2 w-full text-left px-4 py-2 hover:bg-red-600/20 text-red-400 transition">
+          <i data-feather="log-out" class="w-4 h-4"></i>
+          <span>Logout</span>
+        </button>
       </div>
     </div>
   </div>
 </header>
 
 <!------------------- LEFT SIDEBAR ------------------->
-<aside class="fixed inset-y-0 left-0 w-64 bg-gray-900 border-r border-gray-800 transition-all duration-300 z-50 flex flex-col"
+<aside class="fixed inset-y-0 left-0 w-64 bg-gray-900/90 backdrop-blur-xl border-r border-gray-800 transition-all duration-300 z-50 flex flex-col shadow-2xl"
        :class="{ 'w-20': collapsed, 'lg:w-64': !collapsed }"
        x-data="{ collapsed: false }"
-       x-init="$watch('collapsed', v => localStorage.setItem('sidebar', v))"
-       x-effect="collapsed = localStorage.getItem('sidebar') === 'true'">
+       x-init="$watch('collapsed', v => localStorage.setItem('dashboard-sidebar', v))"
+       x-effect="collapsed = localStorage.getItem('dashboard-sidebar') === 'true'">
+  
   <!-- Sidebar Header -->
   <div class="p-5 border-b border-gray-800">
     <div class="flex items-center justify-between">
       <a href="index.html" class="flex items-center space-x-3" x-show="!collapsed">
-        <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">CT</div>
-        <span class="text-xl font-bold text-white">CapTcha</span>
+        <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg">CT</div>
+        <span class="text-xl font-bold text-white">Dashboard</span>
       </a>
       <button @click="collapsed = !collapsed" class="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition">
         <i data-feather="chevrons-left" x-show="!collapsed" class="w-5 h-5"></i>
@@ -94,88 +115,78 @@
     </div>
   </div>
 
-  <!-- Scrollable Nav -->
-  <nav class="flex-1 overflow-y-auto p-4 space-y-6">
-
+  <!-- Nav -->
+  <nav class="flex-1 overflow-y-auto p-4 space-y-8">
     <!-- MAIN -->
     <div>
-      <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2" x-show="!collapsed">Main</p>
+      <p class="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-3" x-show="!collapsed">Main</p>
       <div class="space-y-1">
-        <a href="dashboard.html" class="group flex items-center justify-between p-3 rounded-lg bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 transition">
-          <div class="flex items-center space-x-3">
-            <i data-feather="airplay" class="w-5 h-5"></i>
-            <span x-show="!collapsed">Dashboard</span>
-          </div>
-          <span class="bg-yellow-500/20 text-yellow-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">NEW</span>
+        <a href="dashboard.html" class="flex items-center p-3 rounded-xl bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-indigo-300 hover:from-indigo-600/30 hover:to-purple-600/30 transition-all duration-200">
+          <i data-feather="airplay" class="w-5 h-5"></i>
+          <span x-show="!collapsed" class="ml-3 font-medium">Dashboard</span>
+          <span class="ml-auto bg-yellow-500/20 text-yellow-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">NEW</span>
         </a>
-
-        <!-- Configs + soon -->
-        <a href="#" class="group flex items-center justify-between p-3 rounded-lg text-gray-300 hover:bg-gray-800 transition" x-tooltip="'Configs'">
-          <div class="flex items-center space-x-3">
-            <i data-feather="save" class="w-5 h-5"></i>
-            <span x-show="!collapsed">Configs</span>
-          </div>
-          <span class="bg-orange-500/20 text-orange-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">soon</span>
+        <a href="#" class="flex items-center p-3 rounded-xl text-gray-300 hover:bg-gray-800/50 transition-all duration-200" x-tooltip="'Configs'">
+          <i data-feather="save" class="w-5 h-5"></i>
+          <span x-show="!collapsed" class="ml-3">Configs</span>
+          <span class="ml-auto bg-orange-500/20 text-orange-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">soon</span>
         </a>
-
-        <!-- Scripts + soon -->
-        <a href="#" class="group flex items-center justify-between p-3 rounded-lg text-gray-300 hover:bg-gray-800 transition" x-tooltip="'Scripts'">
-          <div class="flex items-center space-x-3">
-            <i data-feather="code" class="w-5 h-5"></i>
-            <span x-show="!collapsed">Scripts</span>
-          </div>
-          <span class="bg-orange-500/20 text-orange-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">soon</span>
+        <a href="#" class="flex items-center p-3 rounded-xl text-gray-300 hover:bg-gray-800/50 transition-all duration-200" x-tooltip="'Scripts'">
+          <i data-feather="code" class="w-5 h-5"></i>
+          <span x-show="!collapsed" class="ml-3">Scripts</span>
+          <span class="ml-auto bg-orange-500/20 text-orange-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">soon</span>
         </a>
+      </div>
+    </div>
 
-        <!-- Your Keys Dropdown -->
+    <!-- KEYS -->
+    <div>
+      <p class="text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-3" x-show="!collapsed">Keys</p>
+      <div class="space-y-1">
         <div x-data="{ open: true }">
-          <button @click="open = !open" class="w-full group flex items-center justify-between p-3 rounded-lg text-gray-300 hover:bg-gray-800 transition">
-            <div class="flex items-center space-x-3">
-              <i data-feather="key" class="w-5 h-5"></i>
-              <span x-show="!collapsed">Your Keys</span>
-            </div>
-            <i :class="open ? 'rotate-90' : ''" data-feather="chevron-right" class="w-4 h-4 transition-transform" x-show="!collapsed"></i>
+          <button @click="open = !open" class="w-full flex items-center p-3 rounded-xl text-gray-300 hover:bg-gray-800/50 transition-all duration-200">
+            <i data-feather="key" class="w-5 h-5"></i>
+            <span x-show="!collapsed" class="ml-3">Your Keys</span>
+            <i :class="open ? 'rotate-90' : ''" data-feather="chevron-right" class="w-4 h-4 ml-auto transition-transform" x-show="!collapsed"></i>
           </button>
-          <div x-show="open && !collapsed" x-collapse class="ml-8 mt-1 space-y-1">
-            <a href="#" class="block py-1.5 text-sm text-gray-400 hover:text-white transition">View all</a>
+          <div x-show="open && !collapsed" x-collapse class="ml-8 mt-2 space-y-1">
+            <a href="#" class="block py-1.5 text-sm text-gray-400 hover:text-cyan-400 transition">View all</a>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ADMIN SECTION -->
+    <!-- ADMIN AREA – VISIBLE TO ALL -->
     <div>
-      <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2" x-show="!collapsed">Admin</p>
+      <p class="text-xs font-semibold text-red-400 uppercase tracking-widest mb-3" x-show="!collapsed">Admin Area</p>
       <div class="space-y-1">
-        <a href="admin.html" class="group flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-800 transition" x-tooltip="'Admin Panel'">
+        <button @click="checkAdminAccess()" class="w-full flex items-center p-3 rounded-xl bg-gradient-to-r from-red-600/20 to-pink-600/20 text-red-300 hover:from-red-600/30 hover:to-pink-600/30 transition-all duration-200">
           <i data-feather="shield" class="w-5 h-5"></i>
-          <span x-show="!collapsed">Admin Panel</span>
-        </a>
+          <span x-show="!collapsed" class="ml-3 font-medium">Admin Panel</span>
+        </button>
       </div>
     </div>
 
     <!-- OTHER -->
     <div>
-      <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2" x-show="!collapsed">Other</p>
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3" x-show="!collapsed">Other</p>
       <div class="space-y-1">
-        <a href="#" class="group flex items-center justify-between p-3 rounded-lg text-gray-300 hover:bg-gray-800 transition">
-          <div class="flex items-center space-x-3">
-            <i data-feather="file-text" class="w-5 h-5"></i>
-            <span x-show="!collapsed">Documentation</span>
-          </div>
-          <span class="bg-yellow-500/20 text-yellow-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">NEW</span>
+        <a href="#" class="flex items-center p-3 rounded-xl text-gray-300 hover:bg-gray-800/50 transition-all duration-200">
+          <i data-feather="file-text" class="w-5 h-5"></i>
+          <span x-show="!collapsed" class="ml-3">Documentation</span>
+          <span class="ml-auto bg-yellow-500/20 text-yellow-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">NEW</span>
         </a>
-        <a href="https://discord.gg/captcha" target="_blank" class="group flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-800 transition" x-tooltip="'Discord'">
+        <a href="https://discord.gg/captcha" target="_blank" class="flex items-center p-3 rounded-xl text-gray-300 hover:bg-gray-800/50 transition-all duration-200" x-tooltip="'Discord'">
           <i class="fab fa-discord w-5 h-5"></i>
-          <span x-show="!collapsed">Discord</span>
+          <span x-show="!collapsed" class="ml-3">Discord</span>
         </a>
       </div>
     </div>
   </nav>
 
-  <!-- Collapse Button (Mobile + Desktop) -->
+  <!-- Collapse Button -->
   <div class="p-4 border-t border-gray-800">
-    <button @click="collapsed = !collapsed" class="w-full flex items-center justify-center space-x-2 p-2.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm text-gray-300 transition" x-show="!collapsed">
+    <button @click="collapsed = !collapsed" class="w-full flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700 text-sm text-gray-300 transition-all duration-200" x-show="!collapsed">
       <i data-feather="chevrons-left" class="w-4 h-4"></i>
       <span>Collapse</span>
     </button>
@@ -185,23 +196,27 @@
 <!------------------- MAIN CONTENT ------------------->
 <main class="transition-all duration-300 pt-20 px-6 pb-12 min-h-screen"
       :class="{ 'lg:pl-64': !collapsed, 'lg:pl-20': collapsed }">
-  <div class="max-w-7xl mx-auto">
+  <div class="max-w-7xl mx-auto space-y-8">
     <!-- Welcome -->
-    <section class="mb-10">
+    <section>
       <h1 class="text-3xl font-bold mb-1">Your Dashboard</h1>
-      <p class="text-gray-400">Welcome back <span x-text="user?.displayName || user?.email?.split('@')[0] || 'User'"></span>, enjoy your experience!</p>
+      <p class="text-gray-400">
+        Welcome back, <strong x-text="user?.displayName || user?.email?.split('@')[0] || 'User'"></strong>!
+      </p>
       <div class="mt-6 flex flex-wrap gap-3">
-        <button @click="openRedeem=true" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium hover:shadow-lg transition">
-          Redeem Key
+        <button @click="openRedeem=true" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium hover:shadow-lg transition flex items-center space-x-2">
+          <i data-feather="key" class="w-4 h-4"></i>
+          <span>Redeem Key</span>
         </button>
-        <button @click="copyInject()" class="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition">
-          Copy Inject Code
+        <button @click="copyInject()" class="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition flex items-center space-x-2">
+          <i data-feather="copy" class="w-4 h-4"></i>
+          <span>Copy Inject Code</span>
         </button>
       </div>
     </section>
 
     <!-- Stats -->
-    <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div class="glass p-6 rounded-xl transition-all hover:-translate-y-1 hover:shadow-xl">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
@@ -302,13 +317,28 @@
   </div>
 </div>
 
-<!------------------- TOASTS ------------------->
-<div class="fixed top-4 right-4 space-y-2 z-50">
+<!------------------- ADVANCED TOASTS ------------------->
+<div class="fixed top-4 right-4 space-y-3 z-50 max-w-sm w-full">
   <template x-for="t in toasts" :key="t.id">
-    <div x-show="t.visible" x-transition class="glass p-4 rounded-lg flex items-center space-x-3 max-w-sm">
-      <i :data-feather="t.icon" class="w-5 h-5" :class="t.color"></i>
-      <p x-text="t.msg" class="flex-1"></p>
-      <button @click="removeToast(t.id)" class="p-1 rounded hover:bg-gray-800"><i data-feather="x" class="w-4 h-4"></i></button>
+    <div x-show="t.visible" 
+         @click="removeToast(t.id)"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform translate-x-8 scale-95"
+         x-transition:enter-end="opacity-100 transform translate-x-0 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0 transform -translate-x-8 scale-95"
+         class="glass p-4 rounded-xl shadow-2xl cursor-pointer border border-white/20 flex items-center space-x-3 hover:shadow-xl transition-all">
+      <div :class="t.color" class="w-10 h-10 rounded-full flex items-center justify-center bg-white/10">
+        <i :data-feather="t.icon" class="w-5 h-5"></i>
+      </div>
+      <div class="flex-1">
+        <p class="font-medium" x-text="t.title"></p>
+        <p class="text-xs text-gray-300" x-text="t.msg"></p>
+      </div>
+      <button @click.stop="removeToast(t.id)" class="text-gray-400 hover:text-white">
+        <i data-feather="x" class="w-4 h-4"></i>
+      </button>
     </div>
   </template>
 </div>
@@ -325,57 +355,192 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
 
+  const DISCORD_CLIENT_ID = '963238863256567848';
+  const REDIRECT_URI = 'https://captchaservices.vercel.app/dashboard.html';
+  const DISCORD_CLIENT_SECRET = 'e-AcJZ15inxDOh7tovbhxEqYywfHb4bq'; // Keep secret!
+  const ADMIN_DISCORD_IDS = ['1393017932610666577', '805954114231205978'];
+
   function dashboard() {
     return {
       collapsed: false,
       user: null,
+      discordUser: null,
+      discordToken: null,
+      isAdmin: false,
       openRedeem: false,
       redeem: {key:'', macho:''},
-      stats: {personal:0, global:3784},
+      stats: {personal: 42, global: 3784},
       keys: [
         {id:'CT-PRO-2025',macho:'Macho#9001',reseller:{id:'r9',name:'EliteSeller'},claimed:'2025-11-01',expires:'2026-11-01',plan:'Lifetime',status:'Active'},
         {id:'CT-DEV-001',macho:'Dev#001',reseller:{id:'r1',name:'Admin'},claimed:'2025-10-20',expires:'2025-11-20',plan:'Month',status:'Active'},
         {id:'CT-OLD-001',macho:'Legacy#1',reseller:{id:'r2',name:'OldUser'},claimed:'2025-01-01',expires:'2025-02-01',plan:'Week',status:'Expired'}
       ],
-      page:1,
-      toasts:[],
-      initAuth() {
+      page: 1,
+      toasts: [],
+
+      async initAuth() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        if (code) {
+          await this.exchangeDiscordCode(code);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        const saved = localStorage.getItem('discord_token');
+        if (saved) {
+          try {
+            this.discordToken = JSON.parse(saved);
+            await this.refreshDiscordUser();
+          } catch (e) {
+            localStorage.removeItem('discord_token');
+          }
+        }
+
         auth.onAuthStateChanged(u => {
-          if(u) this.user = u;
-          else window.location = 'login.html';
+          if (u) {
+            this.user = u;
+            if (!this.discordToken) this.isAdmin = false;
+          } else {
+            window.location = 'login.html';
+          }
         });
       },
+
+      async exchangeDiscordCode(code) {
+        try {
+          const res = await fetch('https://discord.com/api/oauth2/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              client_id: DISCORD_CLIENT_ID,
+              client_secret: DISCORD_CLIENT_SECRET,
+              grant_type: 'authorization_code',
+              code,
+              redirect_uri: REDIRECT_URI
+            })
+          });
+          const tokenData = await res.json();
+          if (!tokenData.access_token) throw new Error('Invalid code');
+
+          localStorage.setItem('discord_token', JSON.stringify(tokenData));
+          this.discordToken = tokenData;
+          await this.refreshDiscordUser();
+          this.toast('success', 'Discord Linked', 'Your account is now connected!');
+        } catch (err) {
+          this.toast('danger', 'Link Failed', err.message);
+        }
+      },
+
+      async refreshDiscordUser() {
+        if (!this.discordToken) return;
+        try {
+          const res = await fetch('https://discord.com/api/users/@me', {
+            headers: { Authorization: `Bearer ${this.discordToken.access_token}` }
+          });
+          if (res.ok) {
+            this.discordUser = await res.json();
+            this.isAdmin = ADMIN_DISCORD_IDS.includes(this.discordUser.id);
+          } else {
+            await this.refreshToken();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      },
+
+      async refreshToken() {
+        if (!this.discordToken?.refresh_token) return this.unlinkDiscord();
+        try {
+          const res = await fetch('https://discord.com/api/oauth2/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              client_id: DISCORD_CLIENT_ID,
+              client_secret: DISCORD_CLIENT_SECRET,
+              grant_type: 'refresh_token',
+              refresh_token: this.discordToken.refresh_token
+            })
+          });
+          const newToken = await res.json();
+          localStorage.setItem('discord_token', JSON.stringify(newToken));
+          this.discordToken = newToken;
+          await this.refreshDiscordUser();
+        } catch (e) {
+          this.unlinkDiscord();
+        }
+      },
+
+      linkDiscord() {
+        window.location = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
+      },
+
+      unlinkDiscord() {
+        localStorage.removeItem('discord_token');
+        this.discordUser = null;
+        this.discordToken = null;
+        this.isAdmin = false;
+        this.toast('info', 'Unlinked', 'Discord connection removed.');
+      },
+
+      async verifyAccount() {
+        if (!this.discordToken) {
+          this.toast('danger', 'Not Linked', 'Click "Link Discord" to connect.');
+          return;
+        }
+        await this.refreshDiscordUser();
+        if (this.discordUser) {
+          const status = this.isAdmin ? ' (Admin)' : '';
+          this.toast('success', 'Verified', `${this.discordUser.username}#${this.discordUser.discriminator}${status}`);
+        } else {
+          this.unlinkDiscord();
+        }
+      },
+
+      checkAdminAccess() {
+        if (this.isAdmin) {
+          window.location = 'admin.html';
+        } else {
+          this.toast('danger', 'Access Denied', 'You are not an admin.');
+        }
+      },
+
       copyInject() {
         navigator.clipboard.writeText('MachoIsolatedInject(MachoWebRequest(""))");');
-        this.toast('success', 'Inject code copied!');
+        this.toast('success', 'Copied!', 'Inject code ready.');
       },
+
       doRedeem() {
-        if(!this.redeem.key || !this.redeem.macho) return this.toast('danger', 'Fill both fields');
+        if (!this.redeem.key || !this.redeem.macho) return this.toast('danger', 'Error', 'Fill both fields');
         setTimeout(() => {
           this.openRedeem = false;
-          this.toast('success', `Key ${this.redeem.key} redeemed!`);
+          this.toast('success', 'Redeemed!', `Key ${this.redeem.key} activated.`);
           this.redeem = {key:'', macho:''};
         }, 800);
       },
+
       logout() {
-        auth.signOut().then(() => window.location = 'index.html');
+        if (confirm('Logout?')) {
+          localStorage.removeItem('discord_token');
+          auth.signOut().then(() => window.location = 'index.html');
+        }
       },
-      toast(type, msg) {
+
+      toast(type, title, msg) {
         const id = Date.now();
-        const icons = {success:'check-circle', danger:'x-circle'};
-        const colors = {success:'text-green-400', danger:'text-red-400'};
-        this.toasts.push({id, type, msg, icon:icons[type], color:colors[type], visible:true});
-        setTimeout(() => this.removeToast(id), 4000);
+        const icons = {success:'check-circle', danger:'x-circle', info:'info'};
+        const colors = {success:'text-green-400', danger:'text-red-400', info:'text-blue-400'};
+        this.toasts.push({id, type, title, msg, icon:icons[type], color:colors[type], visible:true});
+        setTimeout(() => this.removeToast(id), 5000);
       },
+
       removeToast(id) {
         const t = this.toasts.find(x => x.id === id);
-        if(t) t.visible = false;
+        if (t) t.visible = false;
         setTimeout(() => this.toasts = this.toasts.filter(x => x.id !== id), 300);
       }
     };
   }
 
-  // Dark mode store
   document.addEventListener('alpine:init', () => {
     Alpine.store('dark', localStorage.getItem('dark') === 'true');
     Alpine.effect(() => {
