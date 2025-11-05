@@ -40,13 +40,9 @@
       transition: opacity 0.2s;
       z-index: 10;
     }
-    [x-tooltip]:hover::after {
-      opacity: 1;
-    }
+    [x-tooltip]:hover::after { opacity: 1; }
     /* Smooth collapse */
-    [x-collapse] {
-      transition: height 0.3s ease;
-    }
+    [x-collapse] { transition: height 0.3s ease; }
   </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-gray-100 min-h-screen" x-data="dashboard()" x-init="feather.replace(); initAuth()">
@@ -77,6 +73,7 @@
     </div>
   </div>
 </header>
+
 <!------------------- LEFT SIDEBAR ------------------->
 <aside class="fixed inset-y-0 left-0 w-64 bg-gray-900 border-r border-gray-800 transition-all duration-300 z-50 flex flex-col"
        :class="{ 'w-20': collapsed, 'lg:w-64': !collapsed }"
@@ -96,9 +93,10 @@
       </button>
     </div>
   </div>
+
   <!-- Scrollable Nav -->
   <nav class="flex-1 overflow-y-auto p-4 space-y-6">
-   
+
     <!-- MAIN -->
     <div>
       <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2" x-show="!collapsed">Main</p>
@@ -110,6 +108,8 @@
           </div>
           <span class="bg-yellow-500/20 text-yellow-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">NEW</span>
         </a>
+
+        <!-- Configs + soon -->
         <a href="#" class="group flex items-center justify-between p-3 rounded-lg text-gray-300 hover:bg-gray-800 transition" x-tooltip="'Configs'">
           <div class="flex items-center space-x-3">
             <i data-feather="save" class="w-5 h-5"></i>
@@ -117,6 +117,8 @@
           </div>
           <span class="bg-orange-500/20 text-orange-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">soon</span>
         </a>
+
+        <!-- Scripts + soon -->
         <a href="#" class="group flex items-center justify-between p-3 rounded-lg text-gray-300 hover:bg-gray-800 transition" x-tooltip="'Scripts'">
           <div class="flex items-center space-x-3">
             <i data-feather="code" class="w-5 h-5"></i>
@@ -124,6 +126,7 @@
           </div>
           <span class="bg-orange-500/20 text-orange-300 text-xs px-2 py-0.5 rounded-full" x-show="!collapsed">soon</span>
         </a>
+
         <!-- Your Keys Dropdown -->
         <div x-data="{ open: true }">
           <button @click="open = !open" class="w-full group flex items-center justify-between p-3 rounded-lg text-gray-300 hover:bg-gray-800 transition">
@@ -140,7 +143,7 @@
       </div>
     </div>
 
-    <!-- ADMIN (New Section) -->
+    <!-- ADMIN SECTION -->
     <div>
       <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2" x-show="!collapsed">Admin</p>
       <div class="space-y-1">
@@ -169,6 +172,7 @@
       </div>
     </div>
   </nav>
+
   <!-- Collapse Button (Mobile + Desktop) -->
   <div class="p-4 border-t border-gray-800">
     <button @click="collapsed = !collapsed" class="w-full flex items-center justify-center space-x-2 p-2.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm text-gray-300 transition" x-show="!collapsed">
@@ -195,6 +199,7 @@
         </button>
       </div>
     </section>
+
     <!-- Stats -->
     <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
       <div class="glass p-6 rounded-xl transition-all hover:-translate-y-1 hover:shadow-xl">
@@ -226,6 +231,7 @@
         </div>
       </div>
     </section>
+
     <!-- Keys Table -->
     <section class="glass p-6 rounded-xl">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5">
@@ -318,6 +324,7 @@
   };
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+
   function dashboard() {
     return {
       collapsed: false,
@@ -367,6 +374,7 @@
       }
     };
   }
+
   // Dark mode store
   document.addEventListener('alpine:init', () => {
     Alpine.store('dark', localStorage.getItem('dark') === 'true');
