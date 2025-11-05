@@ -9,7 +9,15 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen">
+<body class="bg-gray-900 text-gray-100 min-h-screen relative">
+
+<!-- LOGOUT BUTTON — ALWAYS VISIBLE -->
+<div class="absolute top-4 right-4 z-50">
+  <button @click="forceLogout()" 
+          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-lg transition">
+    Force Logout
+  </button>
+</div>
 
 <!-- ERROR -->
 <div x-show="error" class="flex items-center justify-center min-h-screen p-6">
@@ -19,9 +27,10 @@
   </div>
 </div>
 
-<!-- LOADING -->
-<div x-show="loading" class="flex items-center justify-center min-h-screen">
-  <div class="text-xl animate-pulse">Loading dashboard...</div>
+<!-- LOADING STATES -->
+<div x-show="loading" class="flex flex-col items-center justify-center min-h-screen p-6">
+  <div class="text-xl animate-pulse mb-4" x-text="loadingMessage"></div>
+  <div class="text-sm text-gray-500">If stuck, use Force Logout above.</div>
 </div>
 
 <!-- NOT ADMIN -->
@@ -39,7 +48,7 @@
 <template x-if="isAdmin && !loading && !error">
   <div>
     <!-- Navbar -->
-    <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-10">
+    <header class="bg-gray-800 border-b border-gray-700 p-4">
       <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold">Admin Dashboard</h1>
         <div class="flex items-center space-x-4">
@@ -50,7 +59,7 @@
     </header>
 
     <!-- Tabs -->
-    <div class="flex border-b border-gray-700 sticky top-16 bg-gray-800 z-10">
+    <div class="flex border-b border-gray-700">
       <button @click="activeTab='keys'; loadData()" 
               :class="activeTab==='keys' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-gray-400'"
               class="px-6 py-3 font-medium">Keys</button>
@@ -61,7 +70,6 @@
 
     <!-- KEYS TAB -->
     <div x-show="activeTab === 'keys'" class="p-6 space-y-6">
-      <!-- Summary -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 rounded-xl text-white">
           <p class="text-sm opacity-90">Total Keys</p>
@@ -77,44 +85,41 @@
         </div>
       </div>
 
-      <!-- Table -->
       <div class="bg-gray-800 rounded-xl overflow-hidden">
         <div class="p-4 border-b border-gray-700">
           <input x-model="search" type="text" placeholder="Search key or user..." 
                  class="w-full sm:w-64 px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-700">
-              <tr>
-                <th class="p-3 text-left">Key Code</th>
-                <th class="p-3 text-left">Plan</th>
-                <th class="p-3 text-left">Expires</th>
-                <th class="p-3 text-left">Status</th>
-                <th class="p-3 text-left">Claimed By</th>
+        <table class="w-full text-sm">
+          <thead class="bg-gray-700">
+            <tr>
+              <th class="p-3 text-left">Key Code</th>
+              <th class="p-3 text-left">Plan</th>
+              <th class="p-3 text-left">Expires</th>
+              <th class="p-3 text-left">Status</th>
+              <th class="p-3 text-left">Claimed By</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="key in filteredKeys" :key="key.code">
+              <tr class="border-b border-gray-700 hover:bg-gray-700/50">
+                <td class="p-3 font-mono text-xs text-indigo-300" x-text="key.code"></td>
+                <td class="p-3" x-text="key.plan"></td>
+                <td class="p-3" x-text="formatDate(key.expires)"></td>
+                <td class="p-3">
+                  <span :class="key.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'"
+                        class="px-2 py-1 rounded text-xs font-medium">
+                    <span x-text="key.status.toUpperCase()"></span>
+                  </span>
+                </td>
+                <td class="p-3 text-xs" x-text="key.claimedBy || '—'"></td>
               </tr>
-            </thead>
-            <tbody>
-              <template x-for="key in filteredKeys" :key="key.code">
-                <tr class="border-b border-gray-700 hover:bg-gray-700/50">
-                  <td class="p-3 font-mono text-xs text-indigo-300" x-text="key.code"></td>
-                  <td class="p-3" x-text="key.plan"></td>
-                  <td class="p-3" x-text="formatDate(key.expires)"></td>
-                  <td class="p-3">
-                    <span :class="key.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'"
-                          class="px-2 py-1 rounded text-xs font-medium">
-                      <span x-text="key.status.toUpperCase()"></span>
-                    </span>
-                  </td>
-                  <td class="p-3 text-xs" x-text="key.claimedBy || '—'"></td>
-                </tr>
-              </template>
-              <tr x-show="filteredKeys.length === 0">
-                <td colspan="5" class="text-center py-8 text-gray-500">No keys found.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+            </template>
+            <tr x-show="filteredKeys.length === 0">
+              <td colspan="5" class="text-center py-8 text-gray-500">No keys found.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -140,7 +145,7 @@
 // === CONFIG ===
 const DISCORD_CLIENT_ID = '963238863256567848';
 const REDIRECT_URI = 'https://capovh.github.io/CapTcha/admin.html';
-const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/capovh/CapTcha/main/keyx.txt'; // Your real URL
+const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/capovh/CapTcha/main/keyx.txt';
 const ADMIN_DISCORD_IDS = ['1393017932610666577', '805954114231205978'];
 
 // Firebase
@@ -165,7 +170,7 @@ function admin() {
     injections: [],
     activeTab: 'keys',
     search: '',
-    refreshInterval: null,
+    loadingMessage: 'Checking admin access...',
 
     get activeCount() { return this.keys.filter(k => k.status === 'active').length; },
     get expiredCount() { return this.keys.filter(k => k.status === 'expired').length; },
@@ -173,6 +178,7 @@ function admin() {
     async init() {
       this.loading = true;
       this.error = null;
+      this.loadingMessage = 'Checking admin access...';
 
       try {
         const saved = localStorage.getItem('discord_user');
@@ -180,18 +186,19 @@ function admin() {
         const code = urlParams.get('code');
 
         if (code) {
+          this.loadingMessage = 'Logging in with Discord...';
           await this.exchangeCode(code);
           window.history.replaceState({}, document.title, window.location.pathname);
         } else if (saved) {
           this.user = JSON.parse(saved);
           if (ADMIN_DISCORD_IDS.includes(this.user.id)) {
             this.isAdmin = true;
+            this.loadingMessage = 'Loading dashboard...';
             await this.loadData();
-            this.startAutoRefresh();
           }
         }
       } catch (err) {
-        this.error = 'Login failed: ' + err.message;
+        this.error = 'Error: ' + err.message;
       } finally {
         this.loading = false;
       }
@@ -210,7 +217,7 @@ function admin() {
         })
       });
       const data = await res.json();
-      if (!data.access_token) throw new Error('Invalid code');
+      if (!data.access_token) throw new Error('Invalid login code');
 
       const userRes = await fetch('https://discord.com/api/users/@me', {
         headers: { Authorization: `Bearer ${data.access_token}` }
@@ -218,21 +225,19 @@ function admin() {
       const user = await userRes.json();
       localStorage.setItem('discord_user', JSON.stringify(user));
 
-      if (!ADMIN_DISCORD_IDS.includes(user.id)) throw new Error('Not admin');
+      if (!ADMIN_DISCORD_IDS.includes(user.id)) throw new Error('Not an admin');
       this.user = user;
       this.isAdmin = true;
       await this.loadData();
-      this.startAutoRefresh();
     },
 
     async loadData() {
       this.loading = true;
       this.error = null;
+      this.loadingMessage = 'Loading keys and stats...';
 
       try {
         let githubKeys = [];
-
-        // Try GitHub
         try {
           const res = await fetch(GITHUB_RAW_URL, { cache: 'no-store' });
           if (res.ok) {
@@ -245,28 +250,23 @@ function admin() {
             });
           }
         } catch (e) {
-          console.warn('GitHub keys failed:', e);
-          // Continue without GitHub
+          console.warn('GitHub failed, continuing...', e);
         }
 
-        // Load Firebase
         const [claimedSnap, injSnap] = await Promise.all([
           db.ref('keys').once('value'),
           db.ref('injections').once('value')
         ]);
 
         const claimed = claimedSnap.val() || {};
-
         this.keys = githubKeys.map(k => ({
           ...k,
           claimedBy: claimed[k.code]?.claimedBy || null
         }));
-
         this.injections = Object.values(injSnap.val() || {});
 
       } catch (err) {
-        this.error = 'Data error: ' + err.message;
-        this.keys = [];
+        this.error = 'Load failed: ' + err.message;
       } finally {
         this.loading = false;
       }
@@ -281,21 +281,25 @@ function admin() {
       );
     },
 
-    startAutoRefresh() {
-      if (this.refreshInterval) clearInterval(this.refreshInterval);
-      this.refreshInterval = setInterval(() => this.loadData(), 30000);
-    },
-
     loginWithDiscord() {
       window.location = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
     },
 
     logout() {
       localStorage.removeItem('discord_user');
-      if (this.refreshInterval) clearInterval(this.refreshInterval);
       this.isAdmin = false;
       this.user = null;
       this.keys = [];
+      this.injections = [];
+      this.error = null;
+      this.loading = false;
+    },
+
+    forceLogout() {
+      if (confirm('Force logout and clear all data?')) {
+        this.logout();
+        window.location.reload();
+      }
     },
 
     formatDate(date) {
