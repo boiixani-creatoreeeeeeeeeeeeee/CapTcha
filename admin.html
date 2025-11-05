@@ -1,43 +1,292 @@
+<!DOCTYPE html>
+<html lang="en" x-data="admin()" x-init="init()">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – CapTcha Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen relative">
+
+<!-- FORCE LOGOUT: Only if loading > 3s -->
+<div x-show="loading && showForceLogout" class="absolute top-4 right-4 z-50">
+  <button @click="forceLogout()" 
+          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-lg transition">
+    Force Logout
+  </button>
+</div>
+
+<!-- LOADING -->
+<div x-show="loading" class="flex flex-col items-center justify-center min-h-screen p-6">
+  <div class="text-xl animate-pulse mb-2">Loading keys...</div>
+  <div class="text-sm text-gray-500">If stuck, use Force Logout (auto-hides in 3s).</div>
+</div>
+
+<!-- NOT ADMIN -->
+<div x-show="!isAdmin && !loading" class="flex items-center justify-center min-h-screen p-6">
+  <div class="text-center">
+    <h1 class="text-2xl font-bold mb-4">Admin Access Required</h1>
+    <button @click="loginWithDiscord()"
+            class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-xl transition">
+      Login with Discord
+    </button>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<template x-if="isAdmin && !loading">
+  <div>
+    <!-- Navbar -->
+    <header class="bg-gray-800 border-b border-gray-700 p-4">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+        <div class="flex items-center space-x-4">
+          <span class="text-sm">Welcome, <strong x-text="user.username"></strong></span>
+          <button @click="logout()" class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-gray-700">
+      <button @click="activeTab='keys'; loadData()" 
+              :class="activeTab==='keys' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-gray-400'"
+              class="px-6 py-3 font-medium">Keys</button>
+      <button @click="activeTab='stats'" 
+              :class="activeTab==='stats' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-gray-400'"
+              class="px-6 py-3 font-medium">Stats</button>
+    </div>
+
+    <!-- KEYS TAB -->
+    <div x-show="activeTab === 'keys'" class="p-6 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 rounded-xl text-white">
+          <p class="text-sm opacity-90">Total Keys</p>
+          <p class="text-3xl font-bold" x-text="keys.length"></p>
+        </div>
+        <div class="bg-gradient-to-r from-green-600 to-teal-600 p-5 rounded-xl text-white">
+          <p class="text-sm opacity-90">Active</p>
+          <p class="text-3xl font-bold" x-text="keys.filter(k => k.status === 'active').length"></p>
+        </div>
+        <div class="bg-gradient-to-r from-red-600 to-pink-600 p-5 rounded-xl text-white">
+          <p class="text-sm opacity-90">Expired</p>
+          <p class="text-3xl font-bold" x-text="keys.filter(k => k.status === 'expired').length"></p>
+        </div>
+      </div>
+
+      <div class="bg-gray-800 rounded-xl overflow-hidden">
+        <div class="p-4 border-b border-gray-700">
+          <input x-model="search" type="text" placeholder="Search key or user..."
+                 class="w-full sm:w-64 px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+        </div>
+        <table class="w-full text-sm">
+          <thead class="bg-gray-700">
+            <tr>
+              <th class="p-3 text-left">Key Code</th>
+              <th class="p-3 text-left">Plan</th>
+              <th class="p-3 text-left">Expires</th>
+              <th class="p-3 text-left">Status</th>
+              <th class="p-3 text-left">Claimed By</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="key in filteredKeys" :key="key.code">
+              <tr class="border-b border-gray-700 hover:bg-gray-700/50">
+                <td class="p-3 font-mono text-xs text-indigo-300" x-text="key.code"></td>
+                <td class="p-3" x-text="key.plan"></td>
+                <td class="p-3" x-text="formatDate(key.expires)"></td>
+                <td class="p-3">
+                  <span :class="key.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'"
+                        class="px-2 py-1 rounded text-xs font-medium">
+                    <span x-text="key.status.toUpperCase()"></span>
+                  </span>
+                </td>
+                <td class="p-3 text-xs" x-text="key.claimedBy || '—'"></td>
+              </tr>
+            </template>
+            <tr x-show="filteredKeys.length === 0">
+              <td colspan="5" class="text-center py-8 text-gray-500">No keys found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div x-show="activeTab === 'stats'" class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-gray-800 p-6 rounded-xl">
+        <h3 class="text-lg font-semibold text-gray-400">Total Keys</h3>
+        <p class="text-4xl font-bold mt-2" x-text="keys.length"></p>
+      </div>
+      <div class="bg-gray-800 p-6 rounded-xl">
+        <h3 class="text-lg font-semibold text-gray-400">Active Keys</h3>
+        <p class="text-4xl font-bold mt-2 text-green-400" x-text="keys.filter(k => k.status === 'active').length"></p>
+      </div>
+      <div class="bg-gray-800 p-6 rounded-xl">
+        <h3 class="text-lg font-semibold text-gray-400">Total Injections</h3>
+        <p class="text-4xl font-bold mt-2 text-blue-400">—</p>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script>
-// === NO SECRETS HERE ===
-const PROXY_URL = 'https://backedddd-1sw.onrender.com';  // ← YOUR VERCEL URL
+// === CONFIG ===
+const DISCORD_CLIENT_ID = '963238863256567848';
+const REDIRECT_URI = 'https://capovh.github.io/CapTcha/admin.html';
+
+// === CORS.lol + GitHub API ===
+const CORS_PROXY = 'https://api.cors.lol/?url=';
+const GITHUB_TOKEN = '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';
+const GITHUB_USER = '72395839745598327589k';
+const GITHUB_REPO = 'dsadasdasd324e3242';
+const GITHUB_PATH = 'keys.txt';
+
+// FINAL URL
+const GITHUB_API_URL = CORS_PROXY + encodeURIComponent(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`);
+
+const ADMIN_DISCORD_IDS = ['1393017932610666577', '805954114231205978'];
 
 function admin() {
   return {
-    // ... same UI ...
+    loading: false,
+    isAdmin: false,
+    user: null,
+    keys: [],
+    activeTab: 'keys',
+    search: '',
+    showForceLogout: false,
+    forceLogoutTimer: null,
+
+    async init() {
+      if (!window.location.pathname.includes('admin.html')) return;
+
+      this.loading = true;
+      this.showForceLogout = false;
+
+      this.forceLogoutTimer = setTimeout(() => {
+        if (this.loading) this.showForceLogout = true;
+      }, 3000);
+
+      try {
+        const saved = localStorage.getItem('discord_user');
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+
+        if (code) {
+          await this.exchangeCode(code);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (saved) {
+          this.user = JSON.parse(saved);
+          if (ADMIN_DISCORD_IDS.includes(this.user.id)) {
+            this.isAdmin = true;
+            await this.loadData();
+          }
+        }
+      } catch (err) {
+        alert('Login failed: ' + err.message);
+      } finally {
+        clearTimeout(this.forceLogoutTimer);
+        this.showForceLogout = false;
+        this.loading = false;
+      }
+    },
 
     async exchangeCode(code) {
-      const res = await fetch(`${PROXY_URL}/auth/discord?code=${code}`);
+      const res = await fetch('https://discord.com/api/oauth2/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: DISCORD_CLIENT_ID,
+          client_secret: 'e-AcJZ15inxDOh7tovbhxEqYywfHb4bq',
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: REDIRECT_URI
+        })
+      });
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      if (!data.access_token) throw new Error('Invalid code');
 
-      localStorage.setItem('discord_user', JSON.stringify(data.user));
-      this.user = data.user;
-      this.isAdmin = ['1393017932610666577', '805954114231205978'].includes(data.user.id);
-      if (this.isAdmin) await this.loadData();
+      const userRes = await fetch('https://discord.com/api/users/@me', {
+        headers: { Authorization: `Bearer ${data.access_token}` }
+      });
+      const user = await userRes.json();
+      localStorage.setItem('discord_user', JSON.stringify(user));
+
+      if (!ADMIN_DISCORD_IDS.includes(user.id)) throw new Error('Not admin');
+      this.user = user;
+      this.isAdmin = true;
+      await this.loadData();
     },
 
     async loadData() {
       this.loading = true;
       try {
-        const res = await fetch(`${PROXY_URL}/keys`);
-        const { content } = await res.json();
-        const lines = content.trim().split('\n').filter(l => l);
+        // Fetch with token in headers via CORS.lol
+        const res = await fetch(GITHUB_API_URL, {
+          headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const apiData = await res.json();
+        if (!apiData.content) throw new Error('No content in file');
+
+        const text = atob(apiData.content); // Base64 decode
+        const lines = text.trim().split('\n').filter(l => l);
         this.keys = lines.map(line => {
           const [code, plan, expires, claimedBy = '—'] = line.split('|');
           const isExpired = new Date(expires) < new Date();
           return { code, plan, expires, status: isExpired ? 'expired' : 'active', claimedBy };
         });
+
       } catch (err) {
         alert('Failed to load keys: ' + err.message);
+        this.keys = [];
       } finally {
         this.loading = false;
       }
     },
 
+    get filteredKeys() {
+      if (!this.search) return this.keys;
+      const s = this.search.toLowerCase();
+      return this.keys.filter(k =>
+        k.code.toLowerCase().includes(s) ||
+        (k.claimedBy && k.claimedBy.toLowerCase().includes(s))
+      );
+    },
+
     loginWithDiscord() {
-      window.location = `https://discord.com/oauth2/authorize?client_id=963238863256567848&redirect_uri=${encodeURIComponent('https://capovh.github.io/CapTcha/admin.html')}&response_type=code&scope=identify`;
+      window.location = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
+    },
+
+    logout() {
+      localStorage.removeItem('discord_user');
+      this.isAdmin = false;
+      this.user = null;
+      this.keys = [];
+    },
+
+    forceLogout() {
+      if (confirm('Force logout and clear session?')) {
+        this.logout();
+        window.location.reload();
+      }
+    },
+
+    formatDate(date) {
+      try {
+        return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      } catch {
+        return '—';
+      }
     }
   };
 }
 </script>
+</body>
+</html>
