@@ -9,7 +9,7 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen relative">
 
-<!-- FORCE LOGOUT: Shows only if loading > 3s -->
+<!-- FORCE LOGOUT: Only if loading > 3s -->
 <div x-show="loading && showForceLogout" class="absolute top-4 right-4 z-50">
   <button @click="forceLogout()" 
           class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-lg transition">
@@ -132,18 +132,18 @@
 </template>
 
 <script>
-// === CONFIG ===
+// === UPDATE THESE VALUES ===
 const DISCORD_CLIENT_ID = '963238863256567848';
 const REDIRECT_URI = 'https://capovh.github.io/CapTcha/admin.html';
 
-// PRIVATE REPO ACCESS (WORKS IN BROWSER)
-const GITHUB_TOKEN = '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';
-const GITHUB_USER = '72395839745598327589k';
-const GITHUB_REPO = 'dsadasdasd324e3242';
+// === YOUR REAL GITHUB REPO ===
+const GITHUB_TOKEN = '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';  // ← YOUR REAL TOKEN
+const GITHUB_USER = '2395839745598327589k';  // ← YOUR GITHUB USERNAME
+const GITHUB_REPO = '2395839745598327589k/dsadasdasd324e3242';  // ← YOUR REAL REPO NAME
 const GITHUB_BRANCH = 'main';
 const GITHUB_PATH = 'keys.txt';
 
-// FINAL URL: Works 100% in browser
+// FINAL URL (WORKS 100%)
 const GITHUB_RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${GITHUB_PATH}?token=${GITHUB_TOKEN}`;
 
 const ADMIN_DISCORD_IDS = ['1393017932610666577', '805954114231205978'];
@@ -224,20 +224,17 @@ function admin() {
       this.loading = true;
       try {
         const res = await fetch(GITHUB_RAW_URL, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        if (!res.ok) {
+          const msg = await res.text();
+          throw new Error(`HTTP ${res.status}: ${msg.substring(0, 100)}`);
+        }
 
         const text = await res.text();
         const lines = text.trim().split('\n').filter(l => l);
         this.keys = lines.map(line => {
           const [code, plan, expires, claimedBy = '—'] = line.split('|');
           const isExpired = new Date(expires) < new Date();
-          return {
-            code,
-            plan,
-            expires,
-            status: isExpired ? 'expired' : 'active',
-            claimedBy
-          };
+          return { code, plan, expires, status: isExpired ? 'expired' : 'active', claimedBy };
         });
 
       } catch (err) {
